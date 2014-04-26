@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset='utf-8'>
+	<title>
+		Quizzical
+	</title>
+</head>
+<body>
+<form method='post' action='category'>
+	<h2>Add Category</h2>
+	<label>Category:</label>
+	<input type='text' name='category'/>
+	<input type='submit'/>
+</form>
+<form method='post' action='question'>
+	<h2></h2>
+	<label>Question:</label>
+	<br/>
+	<input type='text' name='question'/>
+	<br/>
+	<label>A:</label>
+	<input type='text' name='a'/>
+	<br/>
+	<label>B:</label>
+	<input type='text' name='b'/>
+	<br/>
+	<label>C:</label>
+	<input type='text' name='c'/>
+	<br/>
+	<label>D:</label>
+	<input type='text' name='d'/>
+	<br/>
+	<label>Category:</label>
+	<br/>
+	<select name='category'>
+		{{.}}
+	</select>
+	<br/>
+	<label>Answer:</label>
+	<br/>
+	<select name='answer'>
+		<option value='A'>A</option>
+		<option value='B'>B</option>
+		<option value='C'>C</option>
+		<option value='D'>D</option>
+	</select>
+	<br/>
+	<input type='submit'/>
+</form>
+</body>
+</html>
