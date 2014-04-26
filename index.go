@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/bpowers/seshcookie"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"strings"
 	"text/template"
@@ -30,6 +31,7 @@ const (
 	ENTITY_QUESTION   = "question"
 	KEY_AUTHENTICATED = "authenticated"
 	SESSION_KEY       = "239ru238rhiou34hroi1uoi"
+	NUM_QUESTIONS     = 20
 )
 
 type Category struct {
@@ -92,8 +94,6 @@ func (self *AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if strings.EqualFold(username, STUPID_USERNAME) && strings.EqualFold(password, STUPID_PASSWORD) {
-		//w.Header().Set("Status",string(http.StatusFound))
-		//w.Header().Set("Location","/admin")
 		authenticateAndRedirect(w, r, "/admin", http.StatusFound)
 		return
 	} else {
@@ -246,10 +246,19 @@ func listCategories(c appengine.Context) ([]Category, error) {
 
 func listQuestions(c appengine.Context, category string) ([]Question, error) {
 
-	query := datastore.NewQuery(ENTITY_QUESTION).Filter(fmt.Sprintf("%s =", "Category"), category).Limit(20)
+	count, err := countQuestions(c, category)
 
 	var questions []Question
-	_, err := query.GetAll(c, &questions)
+	query := datastore.NewQuery(ENTITY_QUESTION).Filter(fmt.Sprintf("%s =", "Category"), category)
+
+	if err != nil && count > NUM_QUESTIONS {
+		randomLimit := count - NUM_QUESTIONS
+		start := rand.Int63n(int64(randomLimit))
+
+		query.Offset(int(start))
+	}
+
+	_, err = query.Limit(NUM_QUESTIONS).GetAll(c, &questions)
 
 	if err != nil {
 		return nil, err
