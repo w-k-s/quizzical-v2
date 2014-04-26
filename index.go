@@ -7,33 +7,29 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"github.com/bpowers/seshcookie"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"text/template"
-	"github.com/bpowers/seshcookie"
 )
 
 const (
-	PARAM_USERNAME  = "username"
-	PARAM_PASSWORD  = "password"
-	STUPID_USERNAME = "waqqas"
-	STUPID_PASSWORD = "CharlieAndTheChocolateFactory"
-	PARAM_CATEGORY  = "category"
-	PARAM_QUESTION  = "question"
-	PARAM_ANSWER    = "answer"
-	PARAM_A         = "a"
-	PARAM_B         = "b"
-	PARAM_C         = "c"
-	PARAM_D         = "d"
-	ENTITY_CATEGORY = "category"
-	ENTITY_QUESTION = "question"
+	PARAM_USERNAME    = "username"
+	PARAM_PASSWORD    = "password"
+	STUPID_USERNAME   = "waqqas"
+	STUPID_PASSWORD   = "CharlieAndTheChocolateFactory"
+	PARAM_CATEGORY    = "category"
+	PARAM_QUESTION    = "question"
+	PARAM_ANSWER      = "answer"
+	PARAM_A           = "a"
+	PARAM_B           = "b"
+	PARAM_C           = "c"
+	PARAM_D           = "d"
+	ENTITY_CATEGORY   = "category"
+	ENTITY_QUESTION   = "question"
 	KEY_AUTHENTICATED = "authenticated"
-	//PARAM_STUPID_SECURITY = "stupid_security"
 	SESSION_KEY       = "239ru238rhiou34hroi1uoi"
-	//seperator          = string(os.PathSeparator)
-	//QUESTIONS_FILE_EXT = ".xml"
-	//QUESTIONS_DIR      = "questions"
 )
 
 type Category struct {
@@ -64,10 +60,10 @@ type QuestionHandler struct{}
 
 func init() {
 	http.HandleFunc("/", indexHandler)
-	http.Handle("/auth", seshcookie.NewSessionHandler(&AuthHandler{},SESSION_KEY,nil))
-	http.Handle("/admin", seshcookie.NewSessionHandler(&AdminHandler{},SESSION_KEY,nil))
-	http.Handle("/category", seshcookie.NewSessionHandler(&CategoryHandler{},SESSION_KEY,nil))
-	http.Handle("/question", seshcookie.NewSessionHandler(&QuestionHandler{},SESSION_KEY,nil))
+	http.Handle("/auth", seshcookie.NewSessionHandler(&AuthHandler{}, SESSION_KEY, nil))
+	http.Handle("/admin", seshcookie.NewSessionHandler(&AdminHandler{}, SESSION_KEY, nil))
+	http.Handle("/category", seshcookie.NewSessionHandler(&CategoryHandler{}, SESSION_KEY, nil))
+	http.Handle("/question", seshcookie.NewSessionHandler(&QuestionHandler{}, SESSION_KEY, nil))
 	http.HandleFunc("/categories", categoriesHandler)
 	http.HandleFunc("/questions", questionsHandler)
 }
@@ -82,7 +78,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(html))
 }
 
-func (self * AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (self *AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	username := r.FormValue(PARAM_USERNAME)
 	password := r.FormValue(PARAM_PASSWORD)
@@ -98,7 +94,7 @@ func (self * AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if strings.EqualFold(username, STUPID_USERNAME) && strings.EqualFold(password, STUPID_PASSWORD) {
 		//w.Header().Set("Status",string(http.StatusFound))
 		//w.Header().Set("Location","/admin")
-		authenticateAndRedirect(w,r,"/admin",http.StatusFound)
+		authenticateAndRedirect(w, r, "/admin", http.StatusFound)
 		return
 	} else {
 		http.Error(w, "Bad Credentials", http.StatusUnauthorized)
@@ -106,10 +102,10 @@ func (self * AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (self * AdminHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (self *AdminHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	if redirectIfUnauthenticated(w,r,"/",http.StatusFound){
-		return;
+	if redirectIfUnauthenticated(w, r, "/", http.StatusFound) {
+		return
 	}
 
 	html, err := ioutil.ReadFile("admin.html")
@@ -137,10 +133,10 @@ func (self * AdminHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, categoriesOptions.String())
 }
 
-func (self * CategoryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (self *CategoryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	if redirectIfUnauthenticated(w,r,"/",http.StatusFound){
-		return;
+	if redirectIfUnauthenticated(w, r, "/", http.StatusFound) {
+		return
 	}
 
 	name := r.FormValue(PARAM_CATEGORY)
@@ -166,7 +162,6 @@ func (self * CategoryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 
 	c := appengine.NewContext(r)
-	//key := datastore.NewIncompleteKey(c, ENTITY_CATEGORY, nil)
 
 	categories, err := listCategories(c)
 
@@ -178,7 +173,7 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 	responsdWithJSON(w, categories)
 }
 
-func (self * QuestionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (self *QuestionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	question := r.FormValue(PARAM_QUESTION)
 	answer := r.FormValue(PARAM_ANSWER)
 	category := r.FormValue(PARAM_CATEGORY)
@@ -233,16 +228,6 @@ func questionsHandler(w http.ResponseWriter, r *http.Request) {
 	questionsList := &Questions{Questions: questions, Category: category}
 
 	respondWithXML(w, questionsList)
-	// path := QUESTIONS_DIR + seperator + category + QUESTIONS_FILE_EXT
-	// bytes, err := ioutil.ReadFile(path)
-
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// w.Header().Set("Content-Type", "text/xml")
-	// fmt.Fprint(w, string(bytes))
 }
 
 func listCategories(c appengine.Context) ([]Category, error) {
@@ -256,19 +241,6 @@ func listCategories(c appengine.Context) ([]Category, error) {
 		return nil, err
 	}
 
-	// files, err := ioutil.ReadDir(QUESTIONS_DIR)
-	// categories := make([]string, 0)
-	// for _, file := range files {
-	// 	fileName := file.Name()
-
-	// 	indexExtension := strings.Index(fileName, QUESTIONS_FILE_EXT)
-
-	// 	if indexExtension == -1 {
-	// 		continue
-	// 	}
-
-	// 	categories = append(categories, file.Name()[:indexExtension])
-	// }
 	return categories, nil
 }
 
@@ -286,16 +258,16 @@ func listQuestions(c appengine.Context, category string) ([]Question, error) {
 	return questions, nil
 }
 
-func countQuestions(c appengine.Context, category string) (int,error){
-	query := datastore.NewQuery(ENTITY_QUESTION).Filter(fmt.Sprintf("%s =","Category"), category)
+func countQuestions(c appengine.Context, category string) (int, error) {
+	query := datastore.NewQuery(ENTITY_QUESTION).Filter(fmt.Sprintf("%s =", "Category"), category)
 
-	count,err := query.Count(c)
+	count, err := query.Count(c)
 
-	if err != nil{
-		return -1,err
+	if err != nil {
+		return -1, err
 	}
 
-	return count,nil 
+	return count, nil
 }
 
 func categoryExists(c appengine.Context, category string) (bool, error) {
@@ -314,27 +286,26 @@ func categoryExists(c appengine.Context, category string) (bool, error) {
 	return false, nil
 }
 
-
-func authenticateAndRedirect(w http.ResponseWriter, r * http.Request, url string, status int) {
+func authenticateAndRedirect(w http.ResponseWriter, r *http.Request, url string, status int) {
 	session := seshcookie.Session.Get(r)
 	session[KEY_AUTHENTICATED] = true
 	http.Redirect(w, r, url, status)
 
 }
 
-func redirectIfUnauthenticated(w http.ResponseWriter,r * http.Request,url string, status int) bool{
+func redirectIfUnauthenticated(w http.ResponseWriter, r *http.Request, url string, status int) bool {
 	shouldRedirect := false
 	session := seshcookie.Session.Get(r)
 
-	if session == nil || session[KEY_AUTHENTICATED]==nil{
+	if session == nil || session[KEY_AUTHENTICATED] == nil {
 		shouldRedirect = true
-	}else{
+	} else {
 		authenticated := session[KEY_AUTHENTICATED].(bool)
 		shouldRedirect = !authenticated
 	}
 
 	if shouldRedirect {
-		http.Redirect(w,r,url,status)
+		http.Redirect(w, r, url, status)
 	}
 
 	return shouldRedirect
