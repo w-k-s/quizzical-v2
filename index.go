@@ -27,6 +27,8 @@ const (
 	PARAM_B           = "b"
 	PARAM_C           = "c"
 	PARAM_D           = "d"
+	PARAM_OLD_CATEGORY="old_category"
+	PARAM_OLD_QUESTIOM= "old_question"
 	ENTITY_CATEGORY   = "category"
 	ENTITY_QUESTION   = "question"
 	KEY_AUTHENTICATED = "authenticated"
@@ -59,6 +61,7 @@ type AuthHandler struct{}
 type AdminHandler struct{}
 type CategoryHandler struct{}
 type QuestionHandler struct{}
+type EditQuestionHandler struct{}
 
 func init() {
 	http.HandleFunc("/", indexHandler)
@@ -66,6 +69,7 @@ func init() {
 	http.Handle("/admin", seshcookie.NewSessionHandler(&AdminHandler{}, SESSION_KEY, nil))
 	http.Handle("/category", seshcookie.NewSessionHandler(&CategoryHandler{}, SESSION_KEY, nil))
 	http.Handle("/question", seshcookie.NewSessionHandler(&QuestionHandler{}, SESSION_KEY, nil))
+	http.Handle("/question/edit", seshcookie.NewSessionHandler(&EditQuestionHandler{},SESSION_KEY,nil))
 	http.HandleFunc("/categories", categoriesHandler)
 	http.HandleFunc("/questions", questionsHandler)
 }
@@ -170,7 +174,7 @@ func categoriesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responsdWithJSON(w, categories)
+	respondWithJSON(w, categories)
 }
 
 func (self *QuestionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -198,6 +202,85 @@ func (self *QuestionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "Question '%s' added", q.Question)
+}
+
+func (self * EditQuestionHandler) ServeHTTP(w http.ResponseWriter, r * http.Request){
+
+	if redirectIfUnauthenticated(w,r,"/",http.StatusFound) {
+		return;
+	}
+
+	oldQuestion := r.FormValue(PARAM_OLD_QUESTIOM)
+	oldCategory := r.FormValue(PARAM_OLD_CATEGORY)
+	question := r.FormValue(PARAM_QUESTION)
+	answer := r.FormValue(PARAM_ANSWER)
+	category := r.FormValue(PARAM_CATEGORY)
+	a := r.FormValue(PARAM_A)
+	b := r.FormValue(PARAM_B)
+	c := r.FormValue(PARAM_C)
+	d := r.FormValue(PARAM_D)
+	
+	if len(oldQuestion) == 0 || len(oldCategory) == 0  {
+		http.Error(w, "incomplete", http.StatusBadRequest)
+		return;
+	}
+	
+	context := appengine.NewContext(r)
+	query :=datastore.NewQuery(ENTITY_QUESTION).Filter("Question = ",oldQuestion).Filter("Category = ",oldCategory)
+	numResults,err := query.Count(context)
+
+	if err != nil{
+		http.Error(w,err.Error(),http.StatusInternalServerError)
+		return
+	}
+
+	if numResults > 1{
+		respondWithText(w,"Too many results")
+		return;
+	}else if numResults < 1{
+		respondWithText(w, "No matches")
+		return;
+	}
+
+	var questions []*Question
+	keys,err := query.GetAll(context,&questions)
+
+	if err != nil{
+		http.Error(w,err.Error(),http.StatusInternalServerError)
+	}
+
+
+	if len(question) == 0{
+		question = questions[0].Question
+	}else if len(answer) == 0{
+		answer = questions[0].Answer
+	}else if len(category) == 0{
+		category = questions[0].Category
+	}else if len(a) == 0{
+		a = questions[0].A
+	}else if len(b) == 0{
+		b = questions[0].B
+	}else if len(c) == 0{
+		c = questions[0].C
+	}else if len(c) == 0{
+		d = questions[0].D
+	}
+
+	questions[0].Question = question
+	questions[0].Answer = answer
+	questions[0].Category = category
+	questions[0].A = a
+	questions[0].B = b
+	questions[0].C = c
+	questions[0].D = d
+
+	_, err = datastore.Put(context, keys[0], questions[0])
+
+	if err != nil{
+		http.Error(w,err.Error(),http.StatusInternalServerError)
+	}else{
+		respondWithText(w,fmt.Sprintf("Question '%v' updated to '%v'.",oldQuestion,question))
+	}
 }
 
 func questionsHandler(w http.ResponseWriter, r *http.Request) {
@@ -320,7 +403,12 @@ func redirectIfUnauthenticated(w http.ResponseWriter, r *http.Request, url strin
 	return shouldRedirect
 }
 
-func responsdWithJSON(w http.ResponseWriter, v interface{}) {
+func respondWithText(w http.ResponseWriter,text string){
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprintf(w, text)
+}
+
+func respondWithJSON(w http.ResponseWriter, v interface{}) {
 
 	json, err := json.MarshalIndent(v, "", "    ")
 
