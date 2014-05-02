@@ -1,0 +1,142 @@
+<questions title="Geography">
+	<question correct="3">
+		<ask>Which is the largest capital city in the World?</ask>
+		<answer>Shanghai</answer>
+		<answer>Cairo</answer>
+		<answer>New York City</answer>
+		<answer>Tokyo</answer>
+	</question>
+	<question correct="1">
+		<ask>Which of these countries is located in the continent of Australasia?</ask>
+		<answer>Indonesia</answer>
+		<answer>New Zealand</answer>
+		<answer>Alaska</answer>
+		<answer>Mauritius</answer>
+	</question>
+	<question correct="0">
+		<ask>In which of the following countries is the name of the currency NOT dollar?</ask>
+		<answer>Turkey</answer>
+		<answer>Zimbabwe</answer>
+		<answer>Hong Kong</answer>
+		<answer>Brunei</answer>
+	</question>
+	<question correct="3">
+		<ask>Which capital city has a name that means "Good Airs" in English?</ask>
+		<answer>Picante Burrito</answer>
+		<answer>San Salvador</answer>
+		<answer>Buenas Aguas</answer>
+		<answer>Buenos Aires</answer>
+	</question>
+	<question correct="1">
+		<ask>Dulles International Airport serves which American city?</ask>
+		<answer>Los Angeles</answer>
+		<answer>Washington D.C</answer>
+		<answer>Eau Claire</answer>
+		<answer>New York City</answer>
+	</question>
+	<question correct="2">
+		<ask>Aeroflat is the national airline of which country?</ask>
+		<answer>Poland</answer>
+		<answer>Slovenia</answer>
+		<answer>Russia</answer>
+		<answer>Ukraine</answer>
+	</question>
+	<question correct="0">
+		<ask>In which country is the legendary city of Timbuktu?</ask>
+		<answer>Mali</answer>
+		<answer>Chad</answer>
+		<answer>Uruguay</answer>
+		<answer>India</answer>
+	</question>
+	<question correct="3">
+		<ask>Which country’s flag includes a cedar tree?</ask>
+		<answer>South Africa</answer>
+		<answer>New Zealand</answer>
+		<answer>Cyprus</answer>
+		<answer>Lebanon</answer>
+	</question>
+	<question correct="0">
+		<ask>In which of the following countries is the name of the currency NOT dollar?</ask>
+		<answer></answer>
+		<answer></answer>
+		<answer></answer>
+		<answer></answer>
+	</question>
+	<question correct="1">
+		<ask>How many emirates are there in the United Arab Emirates</ask>
+		<answer>9</answer>
+		<answer>7</answer>
+		<answer>52</answer>
+		<answer>12</answer>
+	</question>
+	<question correct="1">
+		<ask>In which country would you find the city of Greenwich?</ask>
+		<answer>USA</answer>
+		<answer>UK</answer>
+		<answer>Australia</answer>
+		<answer>New Zealand</answer>
+	</question>
+	<question correct="0">
+		<ask>'Death Valley' is located in </ask>
+		<answer>California, US</answer>
+		<answer>Kerala, India</answer>
+		<answer>Yemen</answer>
+		<answer>Saudi Arabia</answer>
+	</question>
+	<question correct="3">
+		<ask>What is the capital of Australia?</ask>
+		<answer>Didgeridoo</answer>
+		<answer>Sydney</answer>
+		<answer>Melbourne</answer>
+		<answer>Canberra</answer>
+	</question>
+	<question correct="1">
+		<ask>The tallest building in the world is located in which city?</ask>
+		<answer>Chicago, USA</answer>
+		<answer>Dubai, United Arab Emirates</answer>
+		<answer>Taipei, Taiwan</answer>
+		<answer>Kuala Lumpur, Malaysia</answer>
+	</question>
+	<question correct="2">
+		<ask>Which of the following countries is located within another country?</ask>
+		<answer>Botswana</answer>
+		<answer>Monaco</answer>
+		<answer>Lesotho</answer>
+		<answer>Luxembourg</answer>
+	</question>
+	<question correct="0">
+		<ask>In which capital city would you find the Vatican?</ask>
+		<answer>Rome</answer>
+		<answer>Paris</answer>
+		<answer>Venice</answer>
+		<answer>Barcelona</answer>
+	</question>
+	<question correct="1">
+		<ask>In terms of area, which is the largest continent in the world?</ask>
+		<answer>Europe</answer>
+		<answer>Asia</answer>
+		<answer>North America</answer>
+		<answer>South America</answer>
+	</question>
+	<question correct="0">
+		<ask>How many states are in the United States of America?</ask>
+		<answer>50</answer>
+		<answer>52</answer>
+		<answer>54</answer>
+		<answer>56</answer>
+	</question>
+	<question correct="2">
+		<ask>What is the name of the longest river in the World?</ask>
+		<answer>Amazon</answer>
+		<answer>Thames</answer>
+		<answer>Nile</answer>
+		<answer>Danube</answer>
+	</question>
+	<question correct="2">
+		<ask>What is the capital of Iran</ask>
+		<answer>Qom</answer>
+		<answer>Isfahan</answer>
+		<answer>Tehran</answer>
+		<answer>Baghdad</answer>
+	</question>
+</questions>

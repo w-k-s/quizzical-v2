@@ -1,0 +1,142 @@
+<questions title="History">
+	<question correct="2">
+		<ask>In which year was the Treaty of Versailles signed?</ask>
+		<answer>1914</answer>
+		<answer>1918</answer>
+		<answer>1919</answer>
+		<answer>1920</answer>
+	</question>
+	<question correct="1">
+		<ask>What is the name of the last Tsar of Russia?</ask>
+		<answer>Ivan the Terrible</answer>
+		<answer>Nicholas Romanov III</answer>
+		<answer>Alexander II</answer>
+		<answer>Vladimier Ilyich Lenin</answer>
+	</question>
+	<question correct="3">
+		<ask>How many states did the United States originally have?</ask>
+		<answer>42</answer>
+		<answer>50</answer>
+		<answer>10</answer>
+		<answer>13</answer>
+	</question>
+	<question correct="0">
+		<ask>The Ottoman Empire originated from which country?</ask>
+		<answer>Turkey</answer>
+		<answer>Persia</answer>
+		<answer>Iraq</answer>
+		<answer>Greece</answer>
+	</question>
+	<question correct="1">
+		<ask>Adolf Hitler was born in which country?</ask>
+		<answer>Germany</answer>
+		<answer>Austria</answer>
+		<answer>Hungary</answer>
+		<answer>Denmark</answer>
+	</question>
+	<question correct="0">
+		<ask>In which city did John F Kennedy's assassinated take place?</ask>
+		<answer>Dallas</answer>
+		<answer>Austin</answer>
+		<answer>Houston</answer>
+		<answer>Washington D.C</answer>
+	</question>
+	<question correct="3">
+		<ask>Joseph Stalin was the premier of which country?</ask>
+		<answer>Cuba</answer>
+		<answer>Georgia</answer>
+		<answer>Ukraine</answer>
+		<answer>Soviet Union</answer>
+	</question>
+	<question correct="2">
+		<ask>Who was the English monarch at the time of the Spanish Armada?</ask>
+		<answer>Victoria</answer>
+		<answer>Henry VIII</answer>
+		<answer>Elizabeth I</answer>
+		<answer>William the Conqueror</answer>
+	</question>
+	<question correct="0">
+		<ask>American involvement in the Korean War took place in which decadde?</ask>
+		<answer>1950s</answer>
+		<answer>1960s</answer>
+		<answer>1970s</answer>
+		<answer>1980s</answer>
+	</question>
+	<question correct="1">
+		<ask>The Battle of Hastings was fought in which country?</ask>
+		<answer>Russia</answer>
+		<answer>England</answer>
+		<answer>France</answer>
+		<answer>Norway</answer>
+	</question>
+	<question correct="2">
+		<ask>Who invented the first successful printing press?</ask>
+		<answer>Sir Isaac Newton</answer>
+		<answer>Benjamin Franklin</answer>
+		<answer>Johannes Gutenberg</answer>
+		<answer>Martin Luther</answer>
+	</question>
+	<question correct="3">
+		<ask>The disease that ravaged and killed a third of Europes population in the 14th century is known as</ask>
+		<answer>The White Death</answer>
+		<answer>Smallpox</answer>
+		<answer>The Black Plague</answer>
+		<answer>The Bubonic Plague</answer>
+	</question>
+	<question correct="0">
+		<ask>The 100 year war was fought between which two countries?</ask>
+		<answer>England and France</answer>
+		<answer>Italy and Carthage</answer>
+		<answer>England and Germany</answer>
+		<answer>Spain and France</answer>
+	</question>
+	<question correct="3">
+		<ask>Which Roman Emperor built a massive wall across Northern Britain in 122 A.D.?</ask>
+		<answer>Nero</answer>
+		<answer>Augustus</answer>
+		<answer>Herod</answer>
+		<answer>Hadrian</answer>
+	</question>
+	<question correct="3">
+		<ask>This man wrote a document known as the 95 Theses</ask>
+		<answer>Saint Agustus</answer>
+		<answer>William King</answer>
+		<answer>Henry David Thoreau</answer>
+		<answer>Martin Luther</answer>
+	</question>
+	<question correct="2">
+		<ask>In 1594 William Shakespeare joined the company of which London theatre.</ask>
+		<answer>Broadway</answer>
+		<answer>Oxford University Theatre</answer>
+		<answer>The Globe</answer>
+		<answer>The London Palladium</answer>
+	</question>
+	<question correct="1">
+		<ask>In which year did the Lebanese Civil War begin?</ask>
+		<answer>1988</answer>
+		<answer>1975</answer>
+		<answer>1990</answer>
+		<answer>1981</answer>
+	</question>
+	<question correct="2">
+		<ask>Which city is sacred to the three major religions: Islam, Christianity and Judaism</ask>
+		<answer>Mecca</answer>
+		<answer>Vatican City</answer>
+		<answer>Jerusalem</answer>
+		<answer>Rome</answer>
+	</question>
+	<question correct="0">
+		<ask>Who was the last premier of the Soviet Union</ask>
+		<answer>Mikhail Gorbachev</answer>
+		<answer>Nikita Khruschev</answer>
+		<answer>Boris Yeltsin</answer>
+		<answer>Waqqas Sheikh</answer>
+	</question>
+	<question correct="3">
+		<ask>Which popular fast food restaurant franchise first opened in 1955</ask>
+		<answer>Hungry Bunny</answer>
+		<answer>Burger King</answer>
+		<answer>KFC</answer>
+		<answer>McDonalds</answer>
+	</question>	
+</questions>
