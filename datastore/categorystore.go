@@ -1,22 +1,22 @@
 package datastore
 
-import(
+import (
 	"appengine"
 	"appengine/datastore"
 	"models"
 	"net/http"
 )
 
-const(
+const (
 	EntityCategory = "category"
 )
 
 type CategoryStore struct{}
 
-func (store * CategoryStore) GetAll(request *http.Request, limit int) ([]*models.Category,error){
+func (store *CategoryStore) GetAll(request *http.Request, limit int) ([]*models.Category, error) {
 
 	if limit <= 0 {
-		return make([]*models.Category,0),nil
+		return make([]*models.Category, 0), nil
 	}
 
 	context := appengine.NewContext(request)
@@ -25,51 +25,51 @@ func (store * CategoryStore) GetAll(request *http.Request, limit int) ([]*models
 
 	var categories []*models.Category
 
-	keys,err := query.GetAll(context,&categories)
+	keys, err := query.GetAll(context, &categories)
 
-	if err != nil{
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
 
 	if categories == nil {
-		categories = make([]*models.Category,0)
+		categories = make([]*models.Category, 0)
 	}
 
-	for i,category := range categories {
+	for i, category := range categories {
 		encodedKey := keys[i].Encode()
 		category.Key = encodedKey
 	}
 
-	return categories,nil
+	return categories, nil
 }
 
 func (s *CategoryStore) Save(request *http.Request, category *models.Category) error {
-	
+
 	context := appengine.NewContext(request)
-	
-	completeKey := datastore.NewKey(context, EntityCategory,category.Hash(),0, nil)
+
+	completeKey := datastore.NewKey(context, EntityCategory, category.Hash(), 0, nil)
 	key, err := datastore.Put(context, completeKey, category)
-	
+
 	if err != nil {
 		return err
 	}
-	
+
 	category.Key = key.Encode()
-	
+
 	return nil
 }
 
 func (s *CategoryStore) Delete(request *http.Request, key string) error {
-	
+
 	context := appengine.NewContext(request)
 	decodedKey, err := datastore.DecodeKey(key)
-	
+
 	if err != nil {
 		return err
 	}
-	
+
 	category := new(models.Category)
-	
+
 	err = datastore.Get(context, decodedKey, category)
 	if err != nil {
 		return err

@@ -1,6 +1,6 @@
 package models
 
-import(
+import (
 	"encoding/xml"
 	"utils"
 )
@@ -17,8 +17,8 @@ type Question struct {
 	D        string   `xml:"D" datastore:",noindex"`
 }
 
-func (q * Question) Hash() string{
-	return utils.Hash(q.Question,q.Answer,q.Category)
+func (q *Question) Hash() string {
+	return utils.Hash(q.Question, q.Answer, q.Category)
 }
 
 type Questions struct {

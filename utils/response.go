@@ -1,10 +1,10 @@
 package utils
 
-import(
-	"encoding/xml"
+import (
 	"encoding/json"
-	"net/http"
+	"encoding/xml"
 	"fmt"
+	"net/http"
 )
 
 func RespondWithJSON(w http.ResponseWriter, v interface{}) {
@@ -30,7 +30,7 @@ func RespondWithXML(w http.ResponseWriter, v interface{}) {
 	}
 }
 
-func RespondWithText(w http.ResponseWriter,text string){
+func RespondWithText(w http.ResponseWriter, text string) {
 	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintf(w, text)
 }
