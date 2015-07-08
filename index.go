@@ -2,17 +2,20 @@ package quizzical
 
 import (
 	"appengine"
-	"appengine/datastore"
 	"bytes"
-	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"github.com/bpowers/seshcookie"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"strings"
 	"text/template"
+	"models"
+	"utils"
+	"appengine/datastore"
+	asdatastore "datastore"
+	"services"
+	"github.com/go-martini/martini"
+	"github.com/martini-contrib/render"
 )
 
 const (
@@ -36,26 +39,8 @@ const (
 	NUM_QUESTIONS     = 20
 )
 
-type Category struct {
-	Name string
-}
-
-type Question struct {
-	XMLName  xml.Name `xml:"question"`
-	Question string   `xml:"ask"`
-	Answer   string   `xml:"correct,attr"`
-	Category string   `xml:"-"`
-	A        string   `xml:"A"`
-	B        string   `xml:"B"`
-	C        string   `xml:"C"`
-	D        string   `xml:"D"`
-}
-
-type Questions struct {
-	XMLName   xml.Name `xml:"questions"`
-	Category  string   `xml:"title,attr"`
-	Questions []Question
-}
+var categoryStore * asdatastore.CategoryStore;
+var questionStore * asdatastore.QuestionStore;
 
 type AuthHandler struct{}
 type AdminHandler struct{}
@@ -64,18 +49,37 @@ type QuestionHandler struct{}
 type EditQuestionHandler struct{}
 
 func init() {
-	http.HandleFunc("/", indexHandler)
+
+	categoryStore = &asdatastore.CategoryStore{}
+	questionStore = &asdatastore.QuestionStore{}
+
+	quizzicalService := &services.QuizzicalService{CategoryStore: categoryStore, QuestionStore: questionStore}
+	
+	m := martini.Classic()
+
+	m.Use(render.Renderer(render.Options{
+		IndentJSON: true,
+		IndentXML: true,
+		Charset: "UTF-8",
+	}))
+
+	/*http.HandleFunc("/", indexHandler)
 	http.Handle("/auth", seshcookie.NewSessionHandler(&AuthHandler{}, SESSION_KEY, nil))
 	http.Handle("/admin", seshcookie.NewSessionHandler(&AdminHandler{}, SESSION_KEY, nil))
 	http.Handle("/category", seshcookie.NewSessionHandler(&CategoryHandler{}, SESSION_KEY, nil))
 	http.Handle("/question", seshcookie.NewSessionHandler(&QuestionHandler{}, SESSION_KEY, nil))
 	http.Handle("/question/edit", seshcookie.NewSessionHandler(&EditQuestionHandler{},SESSION_KEY,nil))
-	http.HandleFunc("/categories", categoriesHandler)
-	http.HandleFunc("/questions", questionsHandler)
+	*/
+
+	m.Get("/categories", quizzicalService.GetCategories);
+	m.Get("/questions",quizzicalService.GetQuestions)
+
+	http.Handle("/categories", m)
+	http.Handle("/questions",m)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	html, err := ioutil.ReadFile("index.html")
+	html, err := ioutil.ReadFile("templates/index.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -112,7 +116,7 @@ func (self *AdminHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html, err := ioutil.ReadFile("admin.html")
+	html, err := ioutil.ReadFile("templates/admin.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -150,31 +154,15 @@ func (self *CategoryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	category := &Category{Name: name}
-	c := appengine.NewContext(r)
-	key := datastore.NewIncompleteKey(c, ENTITY_CATEGORY, nil)
-	_, err := datastore.Put(c, key, category)
+	category := &models.Category{Name: name}
+	err := categoryStore.Save(r,category)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Fprintf(w, "Category '%s' added", name)
-}
-
-func categoriesHandler(w http.ResponseWriter, r *http.Request) {
-
-	c := appengine.NewContext(r)
-
-	categories, err := listCategories(c)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	respondWithJSON(w, categories)
+	fmt.Fprintf(w, "Category '%s' added", category.Key)
 }
 
 func (self *QuestionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -190,18 +178,16 @@ func (self *QuestionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "incomplete", http.StatusBadRequest)
 	}
 
-	q := &Question{Question: question, Answer: answer, Category: category, A: a, B: b, C: c, D: d}
-	ctx := appengine.NewContext(r)
+	q := &models.Question{Question: question, Answer: answer, Category: category, A: a, B: b, C: c, D: d}
 
-	key := datastore.NewIncompleteKey(ctx, ENTITY_QUESTION, nil)
-	_, err := datastore.Put(ctx, key, q)
+	err := questionStore.Save(r,q)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Fprintf(w, "Question '%s' added", q.Question)
+	fmt.Fprintf(w, "Question '%s' added", q.Key)
 }
 
 func (self * EditQuestionHandler) ServeHTTP(w http.ResponseWriter, r * http.Request){
@@ -235,14 +221,14 @@ func (self * EditQuestionHandler) ServeHTTP(w http.ResponseWriter, r * http.Requ
 	}
 
 	if numResults > 1{
-		respondWithText(w,"Too many results")
+		utils.RespondWithText(w,"Too many results")
 		return;
 	}else if numResults < 1{
-		respondWithText(w, "No matches")
+		utils.RespondWithText(w, "No matches")
 		return;
 	}
 
-	var questions []*Question
+	var questions []*models.Question
 	keys,err := query.GetAll(context,&questions)
 
 	if err != nil{
@@ -279,45 +265,15 @@ func (self * EditQuestionHandler) ServeHTTP(w http.ResponseWriter, r * http.Requ
 	if err != nil{
 		http.Error(w,err.Error(),http.StatusInternalServerError)
 	}else{
-		respondWithText(w,fmt.Sprintf("Question '%v' updated to '%v'.",oldQuestion,question))
+		utils.RespondWithText(w,fmt.Sprintf("Question '%v' updated to '%v'.",oldQuestion,question))
 	}
 }
 
-func questionsHandler(w http.ResponseWriter, r *http.Request) {
-	category := r.FormValue(PARAM_CATEGORY)
-
-	if len(category) == 0 {
-		http.Error(w, "empty category", http.StatusBadRequest)
-		return
-	}
-
-	context := appengine.NewContext(r)
-	exists, err := categoryExists(context, category)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	} else if !exists {
-		http.Error(w, "Category Not Found", http.StatusNotFound)
-		return
-	}
-
-	questions, err := listQuestions(context, category)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	questionsList := &Questions{Questions: questions, Category: category}
-
-	respondWithXML(w, questionsList)
-}
-
-func listCategories(c appengine.Context) ([]Category, error) {
+func listCategories(c appengine.Context) ([]models.Category, error) {
 
 	query := datastore.NewQuery(ENTITY_CATEGORY)
 
-	var categories []Category
+	var categories []models.Category
 	_, err := query.GetAll(c, &categories)
 
 	if err != nil {
@@ -327,56 +283,6 @@ func listCategories(c appengine.Context) ([]Category, error) {
 	return categories, nil
 }
 
-func listQuestions(c appengine.Context, category string) ([]Question, error) {
-
-	count, err := countQuestions(c, category)
-
-	var questions []Question
-	query := datastore.NewQuery(ENTITY_QUESTION).Filter(fmt.Sprintf("%s =", "Category"), category)
-
-	if err != nil && count > NUM_QUESTIONS {
-		randomLimit := count - NUM_QUESTIONS
-		start := rand.Int63n(int64(randomLimit))
-
-		query.Offset(int(start))
-	}
-
-	_, err = query.Limit(NUM_QUESTIONS).GetAll(c, &questions)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return questions, nil
-}
-
-func countQuestions(c appengine.Context, category string) (int, error) {
-	query := datastore.NewQuery(ENTITY_QUESTION).Filter(fmt.Sprintf("%s =", "Category"), category)
-
-	count, err := query.Count(c)
-
-	if err != nil {
-		return -1, err
-	}
-
-	return count, nil
-}
-
-func categoryExists(c appengine.Context, category string) (bool, error) {
-	categories, err := listCategories(c)
-
-	if err != nil {
-		return false, err
-	}
-
-	for _, aCategory := range categories {
-		if strings.EqualFold(aCategory.Name, category) {
-			return true, nil
-		}
-	}
-
-	return false, nil
-}
 
 func authenticateAndRedirect(w http.ResponseWriter, r *http.Request, url string, status int) {
 	session := seshcookie.Session.Get(r)
@@ -401,32 +307,4 @@ func redirectIfUnauthenticated(w http.ResponseWriter, r *http.Request, url strin
 	}
 
 	return shouldRedirect
-}
-
-func respondWithText(w http.ResponseWriter,text string){
-	w.Header().Set("Content-Type", "text/plain")
-	fmt.Fprintf(w, text)
-}
-
-func respondWithJSON(w http.ResponseWriter, v interface{}) {
-
-	json, err := json.MarshalIndent(v, "", "    ")
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, string(json))
-
-}
-
-func respondWithXML(w http.ResponseWriter, v interface{}) {
-	w.Header().Set("Content-Type", "text/xml")
-	enc := xml.NewEncoder(w)
-	enc.Indent("  ", "    ")
-	if err := enc.Encode(v); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
 }
