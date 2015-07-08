@@ -7,15 +7,19 @@ import (
 	"github.com/bpowers/seshcookie"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"text/template"
 	"models"
+	"auth"
 	"utils"
 	"appengine/datastore"
 	asdatastore "datastore"
 	"services"
+	"controllers"
 	"github.com/go-martini/martini"
+	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/render"
+	"github.com/martini-contrib/sessionauth"
+	"github.com/martini-contrib/sessions"
 )
 
 const (
@@ -37,6 +41,9 @@ const (
 	KEY_AUTHENTICATED = "authenticated"
 	SESSION_KEY       = "239ru238rhiou34hroi1uoi"
 	NUM_QUESTIONS     = 20
+	SessionName		  = "com.appspot.asfour-quizzical.session"
+	SessionRedirectUrl = "/"
+	SessionRedirectParam = "forward"
 )
 
 var categoryStore * asdatastore.CategoryStore;
@@ -52,7 +59,6 @@ func init() {
 
 	categoryStore = &asdatastore.CategoryStore{}
 	questionStore = &asdatastore.QuestionStore{}
-
 	quizzicalService := &services.QuizzicalService{CategoryStore: categoryStore, QuestionStore: questionStore}
 	
 	m := martini.Classic()
@@ -63,6 +69,13 @@ func init() {
 		Charset: "UTF-8",
 	}))
 
+
+	store := sessions.NewCookieStore([]byte(auth.SessionAuthenticationKey),[]byte(auth.SessionEncryptionKey))
+	m.Use(sessions.Sessions(SessionName, store))
+	m.Use(sessionauth.SessionUser(GenerateAnonymousUser))
+	sessionauth.RedirectUrl = SessionRedirectUrl
+	sessionauth.RedirectParam = SessionRedirectParam
+
 	/*http.HandleFunc("/", indexHandler)
 	http.Handle("/auth", seshcookie.NewSessionHandler(&AuthHandler{}, SESSION_KEY, nil))
 	http.Handle("/admin", seshcookie.NewSessionHandler(&AdminHandler{}, SESSION_KEY, nil))
@@ -71,43 +84,21 @@ func init() {
 	http.Handle("/question/edit", seshcookie.NewSessionHandler(&EditQuestionHandler{},SESSION_KEY,nil))
 	*/
 
+	m.Get("/",controllers.Index)
 	m.Get("/categories", quizzicalService.GetCategories);
 	m.Get("/questions",quizzicalService.GetQuestions)
+	
+	m.Post("/login",binding.Bind(models.User{}),controllers.Login)
 
+	http.Handle("/",m)
 	http.Handle("/categories", m)
 	http.Handle("/questions",m)
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	html, err := ioutil.ReadFile("templates/index.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	fmt.Fprint(w, string(html))
-}
-
-func (self *AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	username := r.FormValue(PARAM_USERNAME)
-	password := r.FormValue(PARAM_PASSWORD)
-
-	if len(username) == 0 {
-		http.Error(w, "Username not provided", http.StatusBadRequest)
-		return
-	} else if len(password) == 0 {
-		http.Error(w, "Password not provided", http.StatusBadRequest)
-		return
-	}
-
-	if strings.EqualFold(username, STUPID_USERNAME) && strings.EqualFold(password, STUPID_PASSWORD) {
-		authenticateAndRedirect(w, r, "/admin", http.StatusFound)
-		return
-	} else {
-		http.Error(w, "Bad Credentials", http.StatusUnauthorized)
-		return
-	}
+// GetAnonymousUser should generate an anonymous user model
+// for all sessions. This should be an unauthenticated 0 value struct.
+func GenerateAnonymousUser() sessionauth.User {
+	return &models.User{}
 }
 
 func (self *AdminHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
