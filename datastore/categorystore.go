@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	EntityCategory = "category"
+	EntityCategory       = "category"
+	DefaultCategoryLimit = 30
 )
 
 type CategoryStore struct{}
@@ -16,7 +17,7 @@ type CategoryStore struct{}
 func (store *CategoryStore) GetAll(request *http.Request, limit int) ([]*models.Category, error) {
 
 	if limit <= 0 {
-		return make([]*models.Category, 0), nil
+		limit = DefaultCategoryLimit
 	}
 
 	context := appengine.NewContext(request)

@@ -11,11 +11,14 @@ import (
 	"net/http"
 )
 
-func Login(session sessions.Session, postedUser models.User, r render.Render, w http.ResponseWriter, req *http.Request) {
+func PostLogin(session sessions.Session, postedUser models.User, r render.Render, w http.ResponseWriter, req *http.Request) {
 
 	if !auth.Authenticate(postedUser.Username, postedUser.Password) {
 
-		r.Redirect(sessionauth.RedirectUrl)
+		templateMap := make(map[string]interface{})
+		templateMap[TemplateKeyAuthenticated] = false
+
+		GetIndexWithTemplateMap(r, templateMap)
 		return
 	}
 
@@ -23,6 +26,7 @@ func Login(session sessions.Session, postedUser models.User, r render.Render, w 
 	postedUser.Id = auth.MasterUserId
 
 	err := sessionauth.AuthenticateSession(session, &postedUser)
+
 	if err != nil {
 
 		fmt.Fprintf(w, err.Error(), http.StatusInternalServerError)
@@ -35,7 +39,7 @@ func Login(session sessions.Session, postedUser models.User, r render.Render, w 
 	r.Redirect(redirect)
 }
 
-func Logout(session sessions.Session, user sessionauth.User, r render.Render) {
+func GetLogout(session sessions.Session, user sessionauth.User, r render.Render) {
 	sessionauth.Logout(session, user)
 	r.Redirect("/")
 }

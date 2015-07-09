@@ -4,6 +4,10 @@ import (
 	"github.com/martini-contrib/render"
 )
 
-func Index(r render.Render) {
-	r.HTML(200, "index", "")
+func GetIndex(r render.Render) {
+	GetIndexWithTemplateMap(r, nil)
+}
+
+func GetIndexWithTemplateMap(r render.Render, templateMap map[string]interface{}) {
+	r.HTML(200, "index", templateMap)
 }

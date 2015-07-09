@@ -4,7 +4,6 @@ import (
 	"auth"
 	"controllers"
 	asdatastore "datastore"
-	"fmt"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/render"
@@ -16,13 +15,6 @@ import (
 )
 
 const (
-	PARAM_CATEGORY       = "category"
-	PARAM_QUESTION       = "question"
-	PARAM_ANSWER         = "answer"
-	PARAM_A              = "a"
-	PARAM_B              = "b"
-	PARAM_C              = "c"
-	PARAM_D              = "d"
 	SessionName          = "com.appspot.asfour-quizzical.session"
 	SessionRedirectUrl   = "/"
 	SessionRedirectParam = "forward"
@@ -56,18 +48,19 @@ func init() {
 	sessionauth.RedirectUrl = SessionRedirectUrl
 	sessionauth.RedirectParam = SessionRedirectParam
 
-	/*
-		http.Handle("/category", seshcookie.NewSessionHandler(&CategoryHandler{}, SESSION_KEY, nil))
-		http.Handle("/question", seshcookie.NewSessionHandler(&QuestionHandler{}, SESSION_KEY, nil))
-	*/
-
-	m.Get("/", controllers.Index)
-	m.Get("/logout", sessionauth.LoginRequired, controllers.Logout)
+	m.Get("/", controllers.GetIndex)
+	m.Get("/logout", sessionauth.LoginRequired, controllers.GetLogout)
 	m.Get("/admin", sessionauth.LoginRequired, func(w http.ResponseWriter, req *http.Request, r render.Render) {
-		controllers.Admin(quizzicalService, w, req, r)
+		controllers.GetAdmin(quizzicalService, w, req, r)
 	})
 
-	m.Post("/login", binding.Bind(models.User{}), controllers.Login)
+	m.Post("/login", binding.Bind(models.User{}), controllers.PostLogin)
+	m.Post("/category", binding.Bind(models.Category{}), func(w http.ResponseWriter, req *http.Request, postedCategory models.Category, r render.Render) {
+		controllers.PostCategory(quizzicalService, postedCategory, w, req, r)
+	})
+	m.Post("/question", binding.Bind(models.Question{}), func(w http.ResponseWriter, req *http.Request, postedQuestion models.Question, r render.Render) {
+		controllers.PostQuestion(quizzicalService, postedQuestion, w, req, r)
+	})
 
 	m.Get("/categories", quizzicalService.GetCategories)
 	m.Get("/questions", quizzicalService.GetQuestions)
@@ -79,49 +72,4 @@ func init() {
 // for all sessions. This should be an unauthenticated 0 value struct.
 func GenerateAnonymousUser() sessionauth.User {
 	return &models.User{}
-}
-
-func (self *CategoryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	name := r.FormValue(PARAM_CATEGORY)
-
-	if len(name) == 0 {
-		http.Error(w, "Empty Category Name", http.StatusBadRequest)
-		return
-	}
-
-	category := &models.Category{Name: name}
-	err := categoryStore.Save(r, category)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	fmt.Fprintf(w, "Category '%s' added", category.Key)
-}
-
-func (self *QuestionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	question := r.FormValue(PARAM_QUESTION)
-	answer := r.FormValue(PARAM_ANSWER)
-	category := r.FormValue(PARAM_CATEGORY)
-	a := r.FormValue(PARAM_A)
-	b := r.FormValue(PARAM_B)
-	c := r.FormValue(PARAM_C)
-	d := r.FormValue(PARAM_D)
-
-	if len(question) == 0 || len(answer) == 0 || len(a) == 0 || len(b) == 0 || len(c) == 0 || len(d) == 0 || len(category) == 0 {
-		http.Error(w, "incomplete", http.StatusBadRequest)
-	}
-
-	q := &models.Question{Question: question, Answer: answer, Category: category, A: a, B: b, C: c, D: d}
-
-	err := questionStore.Save(r, q)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	fmt.Fprintf(w, "Question '%s' added", q.Key)
 }

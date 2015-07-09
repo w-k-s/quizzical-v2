@@ -10,9 +10,10 @@ import (
 )
 
 const (
-	EntityQuestion  = "question"
-	QueryNoOffset   = -1
-	QueryNoCategory = ""
+	EntityQuestion       = "question"
+	QueryNoOffset        = -1
+	QueryNoCategory      = ""
+	DefaultQuestionLimit = 20
 )
 
 type QuestionStore struct{}
@@ -20,7 +21,7 @@ type QuestionStore struct{}
 func (store *QuestionStore) getQuestions(request *http.Request, limit, offset int, category string) ([]*models.Question, error) {
 
 	if limit <= 0 {
-		return nil, fmt.Errorf("Limit must be greater than 0.")
+		limit = DefaultQuestionLimit
 	}
 
 	context := appengine.NewContext(request)
