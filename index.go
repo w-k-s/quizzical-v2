@@ -1,9 +1,10 @@
 package quizzical
 
 import (
+	"api"
 	"auth"
 	"controllers"
-	asdatastore "datastore"
+	"datastore"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/render"
@@ -11,7 +12,6 @@ import (
 	"github.com/martini-contrib/sessions"
 	"models"
 	"net/http"
-	"services"
 )
 
 const (
@@ -20,20 +20,14 @@ const (
 	SessionRedirectParam = "forward"
 )
 
-var categoryStore *asdatastore.CategoryStore
-var questionStore *asdatastore.QuestionStore
-
-type AuthHandler struct{}
-type AdminHandler struct{}
-type CategoryHandler struct{}
-type QuestionHandler struct{}
-type EditQuestionHandler struct{}
+var categoryStore *datastore.CategoryStore
+var questionStore *datastore.QuestionStore
 
 func init() {
 
-	categoryStore = &asdatastore.CategoryStore{}
-	questionStore = &asdatastore.QuestionStore{}
-	quizzicalService := &services.QuizzicalService{CategoryStore: categoryStore, QuestionStore: questionStore}
+	categoryStore = &datastore.CategoryStore{}
+	questionStore = &datastore.QuestionStore{}
+	dataManager := &datastore.Manager{CategoryStore: categoryStore, QuestionStore: questionStore}
 
 	m := martini.Classic()
 	m.Use(render.Renderer(render.Options{
@@ -48,22 +42,19 @@ func init() {
 	sessionauth.RedirectUrl = SessionRedirectUrl
 	sessionauth.RedirectParam = SessionRedirectParam
 
+	//Allow Martini to inject the datastore manager as a service.
+	m.Map(dataManager)
+
 	m.Get("/", controllers.GetIndex)
 	m.Get("/logout", sessionauth.LoginRequired, controllers.GetLogout)
-	m.Get("/admin", sessionauth.LoginRequired, func(w http.ResponseWriter, req *http.Request, r render.Render) {
-		controllers.GetAdmin(quizzicalService, w, req, r)
-	})
+	m.Get("/admin", sessionauth.LoginRequired, controllers.GetAdmin)
 
 	m.Post("/login", binding.Bind(models.User{}), controllers.PostLogin)
-	m.Post("/category", binding.Bind(models.Category{}), func(w http.ResponseWriter, req *http.Request, postedCategory models.Category, r render.Render) {
-		controllers.PostCategory(quizzicalService, postedCategory, w, req, r)
-	})
-	m.Post("/question", binding.Bind(models.Question{}), func(w http.ResponseWriter, req *http.Request, postedQuestion models.Question, r render.Render) {
-		controllers.PostQuestion(quizzicalService, postedQuestion, w, req, r)
-	})
+	m.Post("/category", sessionauth.LoginRequired, binding.Bind(models.Category{}), controllers.PostCategory)
+	m.Post("/question", sessionauth.LoginRequired, binding.Bind(models.Question{}), controllers.PostQuestion)
 
-	m.Get("/categories", quizzicalService.GetCategories)
-	m.Get("/questions", quizzicalService.GetQuestions)
+	m.Get("/api/categories", api.GetCategories)
+	m.Get("/api/questions", api.GetQuestions)
 
 	http.Handle("/", m)
 }

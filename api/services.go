@@ -1,4 +1,4 @@
-package services
+package api
 
 import (
 	"datastore"
@@ -21,17 +21,12 @@ const (
 	HttpStatusValidationError = 422
 )
 
-type QuizzicalService struct {
-	CategoryStore *datastore.CategoryStore
-	QuestionStore *datastore.QuestionStore
-}
-
-func (q *QuizzicalService) GetCategories(w http.ResponseWriter, req *http.Request, r render.Render) {
+func GetCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
 
 	format := utils.FormValue(req, ParameterFormat, FormatXML)
 	limit, _ := strconv.Atoi(utils.FormValue(req, ParameterLimit, DefaultLimitString))
 
-	categories, err := q.CategoryStore.GetAll(req, limit)
+	categories, err := dm.CategoryStore.GetAll(req, limit)
 
 	if err != nil {
 		fmt.Fprintf(w, err.Error(), http.StatusInternalServerError)
@@ -42,7 +37,7 @@ func (q *QuizzicalService) GetCategories(w http.ResponseWriter, req *http.Reques
 	}
 }
 
-func (q *QuizzicalService) GetQuestions(w http.ResponseWriter, req *http.Request, r render.Render) {
+func GetQuestions(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
 
 	format := utils.FormValue(req, ParameterFormat, FormatXML)
 	limit, _ := strconv.Atoi(utils.FormValue(req, ParameterLimit, DefaultLimitString))
@@ -53,7 +48,7 @@ func (q *QuizzicalService) GetQuestions(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	questions, err := q.QuestionStore.Random(req, category, limit)
+	questions, err := dm.QuestionStore.Random(req, category, limit)
 
 	if err != nil {
 		fmt.Fprintf(w, err.Error(), http.StatusInternalServerError)

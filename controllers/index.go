@@ -2,12 +2,15 @@ package controllers
 
 import (
 	"github.com/martini-contrib/render"
+	"github.com/martini-contrib/sessions"
+	"utils"
 )
 
-func GetIndex(r render.Render) {
-	GetIndexWithTemplateMap(r, nil)
-}
+func GetIndex(session sessions.Session, r render.Render) {
 
-func GetIndexWithTemplateMap(r render.Render, templateMap map[string]interface{}) {
+	templateMap := make(map[string]interface{})
+
+	templateMap[TemplateKeyAuthenticationFailed] = utils.PopFlash(session, TemplateKeyAuthenticationFailed)
+
 	r.HTML(200, "index", templateMap)
 }

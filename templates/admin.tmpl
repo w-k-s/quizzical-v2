@@ -43,7 +43,7 @@
 									{{if .CategoryError}}
 										<div class="alert alert-danger">{{.CategoryError}}</div>
 									{{else if .Category}}
-										<div class="alert alert-success">New Category '{{.Category.Name}}' created.</div>
+										<div class="alert alert-success">New Category '{{.Category}}' created.</div>
 									{{end}}
 								</div>
 							</div>
@@ -117,7 +117,7 @@
 									{{if .QuestionError}}
 										<div class="alert alert-danger">{{.QuestionError}}</div>
 									{{else if .Question}}
-										<div class="alert alert-success">New Question '{{.Question.Question}}' created.</div>
+										<div class="alert alert-success">New Question '{{.Question}}' created.</div>
 									{{end}}
 								</div>
 							</div>

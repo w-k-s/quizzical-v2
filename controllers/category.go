@@ -1,24 +1,24 @@
 package controllers
 
 import (
+	"datastore"
 	"github.com/martini-contrib/render"
+	"github.com/martini-contrib/sessions"
 	"models"
 	"net/http"
-	"services"
+	"utils"
 )
 
-func PostCategory(q *services.QuizzicalService, postedCategory models.Category, w http.ResponseWriter, req *http.Request, r render.Render) {
+func PostCategory(session sessions.Session, dm *datastore.Manager, postedCategory models.Category, w http.ResponseWriter, req *http.Request, r render.Render) {
 
-	err := q.CategoryStore.Save(req, &postedCategory)
-
-	templateMap := make(map[string]interface{})
+	err := dm.CategoryStore.Save(req, &postedCategory)
 
 	if err != nil {
-		templateMap[TemplateKeyCategoryError] = err.Error()
+		utils.PushFlash(session, TemplateKeyCategoryError, err.Error())
 	} else {
-		templateMap[TemplateKeyCategory] = postedCategory
+		utils.PushFlash(session, TemplateKeyCategory, &postedCategory)
 	}
 
-	GetAdminWithTemplateMap(q, w, req, r, templateMap)
-
+	r.Redirect("/admin")
+	return
 }

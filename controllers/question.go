@@ -1,24 +1,24 @@
 package controllers
 
 import (
+	"datastore"
 	"github.com/martini-contrib/render"
+	"github.com/martini-contrib/sessions"
 	"models"
 	"net/http"
-	"services"
+	"utils"
 )
 
-func PostQuestion(q *services.QuizzicalService, postedQuestion models.Question, w http.ResponseWriter, req *http.Request, r render.Render) {
+func PostQuestion(dm *datastore.Manager, session sessions.Session, postedQuestion models.Question, w http.ResponseWriter, req *http.Request, r render.Render) {
 
-	err := q.QuestionStore.Save(req, &postedQuestion)
-
-	templateMap := make(map[string]interface{})
+	err := dm.QuestionStore.Save(req, &postedQuestion)
 
 	if err != nil {
-		templateMap[TemplateKeyQuestionError] = err.Error()
+		utils.PushFlash(session, TemplateKeyQuestionError, err.Error())
 	} else {
-		templateMap[TemplateKeyQuestion] = postedQuestion
+		utils.PushFlash(session, TemplateKeyQuestion, &postedQuestion)
 	}
 
-	GetAdminWithTemplateMap(q, w, req, r, templateMap)
+	r.Redirect("/admin")
 
 }

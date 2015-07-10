@@ -37,10 +37,10 @@
 									<button type="submit" class="btn btn-primary">Submit</button>
 								</div>
 							</div>
-							{{if not .Authenticated}}
+							{{if .AuthenticationError}}
 							<div class="form-group">
 								<div class="col-lg-offset-2 col-lg-8">
-									<div class="alert alert-danger text-center">Incorrect username and/or password</div>
+									<div class="alert alert-danger text-center">{{.AuthenticationError}}</div>
 								</div>
 							</div>
 							{{end}}

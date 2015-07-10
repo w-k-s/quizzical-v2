@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	_ "appengine"
 	"auth"
 	"fmt"
 	"github.com/martini-contrib/render"
@@ -9,16 +8,16 @@ import (
 	"github.com/martini-contrib/sessions"
 	"models"
 	"net/http"
+	"utils"
 )
 
 func PostLogin(session sessions.Session, postedUser models.User, r render.Render, w http.ResponseWriter, req *http.Request) {
 
 	if !auth.Authenticate(postedUser.Username, postedUser.Password) {
 
-		templateMap := make(map[string]interface{})
-		templateMap[TemplateKeyAuthenticated] = false
+		utils.PushFlash(session, TemplateKeyAuthenticationFailed, FlashAuthenticationFailed)
 
-		GetIndexWithTemplateMap(r, templateMap)
+		r.Redirect("/")
 		return
 	}
 
