@@ -5,6 +5,7 @@ import (
 	"auth"
 	"controllers"
 	"datastore"
+	"encoding/gob"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/render"
@@ -24,6 +25,8 @@ var categoryStore *datastore.CategoryStore
 var questionStore *datastore.QuestionStore
 
 func init() {
+
+	registerModelsForTemplating()
 
 	categoryStore = &datastore.CategoryStore{}
 	questionStore = &datastore.QuestionStore{}
@@ -63,4 +66,11 @@ func init() {
 // for all sessions. This should be an unauthenticated 0 value struct.
 func GenerateAnonymousUser() sessionauth.User {
 	return &models.User{}
+}
+
+func registerModelsForTemplating() {
+
+	gob.Register(models.Category{})
+	gob.Register(models.Question{})
+
 }

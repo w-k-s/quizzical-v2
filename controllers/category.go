@@ -16,7 +16,7 @@ func PostCategory(session sessions.Session, dm *datastore.Manager, postedCategor
 	if err != nil {
 		utils.PushFlash(session, TemplateKeyCategoryError, err.Error())
 	} else {
-		utils.PushFlash(session, TemplateKeyCategory, &postedCategory)
+		utils.PushFlash(session, TemplateKeyCategory, postedCategory)
 	}
 
 	r.Redirect("/admin")

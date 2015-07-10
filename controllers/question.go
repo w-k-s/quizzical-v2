@@ -16,7 +16,7 @@ func PostQuestion(dm *datastore.Manager, session sessions.Session, postedQuestio
 	if err != nil {
 		utils.PushFlash(session, TemplateKeyQuestionError, err.Error())
 	} else {
-		utils.PushFlash(session, TemplateKeyQuestion, &postedQuestion)
+		utils.PushFlash(session, TemplateKeyQuestion, postedQuestion)
 	}
 
 	r.Redirect("/admin")

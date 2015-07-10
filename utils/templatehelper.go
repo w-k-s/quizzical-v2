@@ -22,11 +22,6 @@ func PopFlash(session sessions.Session, key string) interface{} {
 		return ""
 	}
 
-	//flash not stored in session
-	if session.Get(key) == nil {
-		return ""
-	}
-
 	value := session.Get(key)
 	session.Delete(key)
 
