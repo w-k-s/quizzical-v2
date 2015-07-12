@@ -13,7 +13,7 @@ import (
 
 func PostLogin(session sessions.Session, postedUser models.User, r render.Render, w http.ResponseWriter, req *http.Request) {
 
-	if !auth.Authenticate(postedUser.Username, postedUser.Password) {
+	if !auth.AuthenticateLogin(postedUser.Username, postedUser.Password) {
 
 		utils.PushFlash(session, TemplateKeyAuthenticationFailed, FlashAuthenticationFailed)
 

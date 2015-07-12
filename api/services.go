@@ -4,10 +4,12 @@ import (
 	"datastore"
 	"fmt"
 	"github.com/martini-contrib/render"
+	"github.com/dgrijalva/jwt-go"
 	"models"
 	"net/http"
 	"strconv"
 	"utils"
+	"bitbucket.org/waqqas-abdulkareem/asfour_toolkit/handlers"
 )
 
 const (
@@ -20,6 +22,15 @@ const (
 	ParameterCategory         = "category"
 	HttpStatusValidationError = 422
 )
+
+func jwtHandlerFactory(handler func (http.ResponseWriter,*http.Request,*jwt.Token)) *handlers.JWTRequestHandler{
+
+	return handlers.QuickJWT(
+		"token",
+		[]byte("secret"),
+		handler,
+	)
+}
 
 func GetCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
 
@@ -35,6 +46,26 @@ func GetCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Reque
 	} else {
 		r.XML(200, models.Categories{Categories: categories})
 	}
+}
+
+func GetJWTCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
+
+	jwtHandlerFactory(func (w http.ResponseWriter,req *http.Request,token *jwt.Token){
+
+		format := token.Claims["format"]
+		limit, _ := strconv.Atoi(token.Claims["limit"].(string))
+
+		categories, err := dm.CategoryStore.GetAll(req, limit)
+
+		if err != nil {
+			fmt.Fprintf(w, err.Error(), http.StatusInternalServerError)
+		} else if format == FormatJSON {
+			r.JSON(200, categories)
+		} else {
+			r.XML(200, models.Categories{Categories: categories})
+		}		
+	
+	}).ServeHTTP(w,req)
 }
 
 func GetQuestions(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
