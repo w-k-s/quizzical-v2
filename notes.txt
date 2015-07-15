@@ -1,0 +1,29 @@
+
+REQUEST:
+
+http://localhost:8080/jwt/questions?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb3JtYXQiOiJ4bWwiLCJsaW1pdCI6IjEwIiwiZXhwIjoiMTQzNjk5MDk1MTE1NSIsImp0aSI6IjEyMyIsImNhdGVnb3J5IjoiTWF0aCJ9.[omitted]
+
+RESPONSE:
+
+<Questions Title="">
+	<question correct="B">
+		<key>
+		ahRkZXZ-YXNmb3VyLXF1aXp6aWNhbHIuCxIIcXVlc3Rpb24iIGQzNjZiYTMxNDEyMjMyODdlNTE5YTk1ZDVjMmRmYjIzDA
+		</key>
+		<ask>1+1</ask>
+		<A>1</A>
+		<B>2</B>
+		<C>3</C>
+		<D>4</D>
+	</question>
+	<question correct="B">
+		<key>
+		ahRkZXZ-YXNmb3VyLXF1aXp6aWNhbHIuCxIIcXVlc3Rpb24iIGUxODhhZGQyMTM5YmU3NTBiZTM0MzU3NjAyZGM3NjU1DA
+		</key>
+		<ask>2+2</ask>
+		<A>2</A>
+		<B>4</B>
+		<C>6</C>
+		<D>8</D>
+	</question>
+</Questions>

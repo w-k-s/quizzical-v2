@@ -23,7 +23,7 @@ const (
 	HttpStatusValidationError = 422
 )
 
-func jwtHandlerFactory(handler func (http.ResponseWriter,*http.Request,*jwt.Token)) *handlers.JWTRequestHandler{
+func jwtHandlerFactory(handler func (http.ResponseWriter,*http.Request,*jwt.Token) error) *handlers.JWTRequestHandler{
 
 	return handlers.QuickJWT(
 		"token",
@@ -48,26 +48,6 @@ func GetCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Reque
 	}
 }
 
-func GetJWTCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
-
-	jwtHandlerFactory(func (w http.ResponseWriter,req *http.Request,token *jwt.Token){
-
-		format := token.Claims["format"]
-		limit, _ := strconv.Atoi(token.Claims["limit"].(string))
-
-		categories, err := dm.CategoryStore.GetAll(req, limit)
-
-		if err != nil {
-			fmt.Fprintf(w, err.Error(), http.StatusInternalServerError)
-		} else if format == FormatJSON {
-			r.JSON(200, categories)
-		} else {
-			r.XML(200, models.Categories{Categories: categories})
-		}		
-	
-	}).ServeHTTP(w,req)
-}
-
 func GetQuestions(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
 
 	format := utils.FormValue(req, ParameterFormat, FormatXML)
@@ -88,4 +68,54 @@ func GetQuestions(dm *datastore.Manager, w http.ResponseWriter, req *http.Reques
 	} else {
 		r.XML(200, models.Questions{Questions: questions, Category: category})
 	}
+}
+
+func GetJWTCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render){
+
+	jwtHandlerFactory(func (w http.ResponseWriter,req *http.Request,token *jwt.Token) error{
+
+		format := token.Claims["format"]
+		limit, err := strconv.Atoi(token.Claims["limit"].(string))
+
+		if err != nil { return err }
+
+		categories, err := dm.CategoryStore.GetAll(req, limit)
+
+		if err != nil { return err }
+
+		if format == FormatJSON {
+			r.JSON(200, categories)
+		} else {
+			r.XML(200, models.Categories{Categories: categories})
+		}
+
+		return nil
+	
+	
+	}).ServeHTTP(w,req)
+}
+
+func GetJWTQuestions(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
+
+	jwtHandlerFactory(func (w http.ResponseWriter,req *http.Request,token *jwt.Token) error{
+
+		format := token.Claims["format"]
+		category := token.Claims["category"].(string)
+		limit, err := strconv.Atoi(token.Claims["limit"].(string))
+
+		if err != nil { return err }
+
+		questions, err := dm.QuestionStore.Random(req, category, limit)
+
+		if err != nil { return err }
+
+		if format == FormatJSON {
+			r.JSON(200, questions)
+		} else {
+			r.XML(200, models.Questions{Questions: questions})
+		}
+
+		return nil	
+	
+	}).ServeHTTP(w,req)
 }

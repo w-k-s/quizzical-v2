@@ -60,6 +60,7 @@ func init() {
 	m.Get("/api/questions", api.GetQuestions)
 
 	m.Get("/jwt/categories", api.GetJWTCategories)
+	m.Get("/jwt/questions",api.GetJWTQuestions)
 
 
 	http.Handle("/", m)
