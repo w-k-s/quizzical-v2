@@ -6,7 +6,7 @@ import (
 )
 
 type Question struct {
-	XMLName  xml.Name `xml:"question" json:"-" datastore:"-"`
+	XMLName  xml.Name `xml:"question" json:"-"`//I made the mistake of not specifying datastore:"-" when I first created this model.
 	Key      string   `xml:"key" json:"key" datastore:"-"`
 	Question string   `xml:"ask" form:"question" binding:"required"`
 	Answer   string   `xml:"correct,attr" datastore:",noindex" form:"answer" binding:"required"`

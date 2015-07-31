@@ -2,13 +2,39 @@ package utils
 
 import (
 	"net/http"
+	"strconv"
 )
 
-func FormValue(r *http.Request, key string, defaultValue string) string {
+type FormHelper struct{
+	Request *http.Request
+}
 
-	if len(r.FormValue(key)) == 0 {
+func (formHelper FormHelper) Int(key string, defaultValue int) int{
+
+	value := formHelper.Request.FormValue(key)
+
+	if len(value) == 0 {
 		return defaultValue
 	}
 
-	return r.FormValue(key)
+	result,err := strconv.Atoi(value)
+
+	if err != nil {
+		return defaultValue
+	}
+
+	return result
 }
+
+func (formHelper FormHelper) String(key string, defaultValue string) string{
+
+	value := formHelper.Request.FormValue(key)
+
+	if len(value) == 0 {
+		return defaultValue
+	}
+
+	return value
+}
+
+
