@@ -1,20 +1,22 @@
 package api
 
 import (
+	"auth"
+	JWT "bitbucket.org/waqqas-abdulkareem/asfour_toolkit/handlers/jwt"
 	"datastore"
 	"fmt"
-	"auth"
-	"github.com/martini-contrib/render"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/martini-contrib/render"
 	"models"
 	"net/http"
 	"utils"
-	"bitbucket.org/waqqas-abdulkareem/asfour_toolkit/handlers"
 )
 
 const (
 	ParameterLimit            = "limit"
+	ParameterOffset						= "offset"
 	DefaultLimit              = 10
+	DefaultOffset							= 0
 	DefaultLimitString        = "10"
 	ParameterFormat           = "format"
 	FormatXML                 = "xml"
@@ -23,66 +25,28 @@ const (
 	HttpStatusValidationError = 422
 )
 
-func jwtHandlerFactory(handler func (http.ResponseWriter,*http.Request,*jwt.Token) error) *handlers.JWTRequestHandler{
+func jwtHandlerFactory(handler func(http.ResponseWriter, *http.Request, *jwt.Token) error) *JWT.Handler {
 
-	return handlers.QuickJWT(
+	return JWT.NewHandler(
 		"token",
 		[]byte(auth.JWTSecret),
 		handler,
 	)
 }
 
-func GetCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
+func GetJWTCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
 
-	form := utils.FormHelper{Request:req}
-	format := form.String(ParameterFormat,FormatXML)
-	limit := form.Int(ParameterLimit,DefaultLimit)
+	jwtHandlerFactory(func(w http.ResponseWriter, req *http.Request, token *jwt.Token) error {
 
-	categories, err := dm.CategoryStore.GetAll(req, limit)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	} else if format == FormatJSON {
-		r.JSON(200, categories)
-	} else {
-		r.XML(200, models.Categories{Categories: categories})
-	}
-}
-
-func GetQuestions(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
-
-	form := utils.FormHelper{Request: req}
-	format := form.String(ParameterFormat,FormatXML)
-	limit := form.Int(ParameterLimit,DefaultLimit)
-	category := form.String(ParameterCategory,"")
-
-	if len(category) == 0 {
-		http.Error(w, fmt.Errorf("Parameter '%s' is missing.", ParameterCategory).Error(), HttpStatusValidationError)
-		return
-	}
-
-	questions, err := dm.QuestionStore.Random(req, category, limit)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	} else if format == FormatJSON {
-		r.JSON(200, questions)
-	} else {
-		r.XML(200, models.Questions{Questions: questions, Category: category})
-	}
-}
-
-func GetJWTCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render){
-
-	jwtHandlerFactory(func (w http.ResponseWriter,req *http.Request,token *jwt.Token) error{
-
-		claims :=  utils.MapHelper{Map: token.Claims}
-		format := claims.String(ParameterFormat,FormatXML)
-		limit := claims.Int(ParameterLimit,DefaultLimit)
+		claims := utils.MapHelper{Map: token.Claims}
+		format := claims.String(ParameterFormat, FormatXML)
+		limit := claims.Int(ParameterLimit, DefaultLimit)
 
 		categories, err := dm.CategoryStore.GetAll(req, limit)
 
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 
 		if format == FormatJSON {
 			r.JSON(200, categories)
@@ -91,28 +55,30 @@ func GetJWTCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Re
 		}
 
 		return nil
-	
-	
-	}).ServeHTTP(w,req)
+
+	}).ServeHTTP(w, req)
 }
 
 func GetJWTQuestions(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
 
-	jwtHandlerFactory(func (w http.ResponseWriter,req *http.Request,token *jwt.Token) error{
+	jwtHandlerFactory(func(w http.ResponseWriter, req *http.Request, token *jwt.Token) error {
 
 		claims := utils.MapHelper{Map: token.Claims}
-		format := claims.String(ParameterFormat,FormatXML)
-		limit := claims.Int(ParameterLimit,DefaultLimit)
-		category := claims.String(ParameterCategory,"")
+		format := claims.String(ParameterFormat, FormatXML)
+		limit := claims.Int(ParameterLimit, DefaultLimit)
+		offset := claims.Int(ParameterOffset, DefaultOffset)
+		category := claims.String(ParameterCategory, "")
 
 		if len(category) == 0 {
 			http.Error(w, fmt.Errorf("Parameter '%s' is missing.", ParameterCategory).Error(), HttpStatusValidationError)
 			return nil
 		}
 
-		questions, err := dm.QuestionStore.Random(req, category, limit)
+		questions, err := dm.QuestionStore.GetQuestions(req, limit,offset,category)
 
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 
 		if format == FormatJSON {
 			r.JSON(200, questions)
@@ -120,7 +86,7 @@ func GetJWTQuestions(dm *datastore.Manager, w http.ResponseWriter, req *http.Req
 			r.XML(200, models.Questions{Questions: questions})
 		}
 
-		return nil	
-	
-	}).ServeHTTP(w,req)
+		return nil
+
+	}).ServeHTTP(w, req)
 }

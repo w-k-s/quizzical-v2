@@ -1,7 +1,7 @@
 
 REQUEST:
 
-http://localhost:8080/jwt/questions?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb3JtYXQiOiJ4bWwiLCJsaW1pdCI6IjEwIiwiZXhwIjoiMTQzNjk5MDk1MTE1NSIsImp0aSI6IjEyMyIsImNhdGVnb3J5IjoiTWF0aCJ9.[omitted]
+http://localhost:8080/jwt/ 
 
 RESPONSE:
 

@@ -5,11 +5,11 @@ import (
 	"strconv"
 )
 
-type FormHelper struct{
+type FormHelper struct {
 	Request *http.Request
 }
 
-func (formHelper FormHelper) Int(key string, defaultValue int) int{
+func (formHelper FormHelper) Int(key string, defaultValue int) int {
 
 	value := formHelper.Request.FormValue(key)
 
@@ -17,7 +17,7 @@ func (formHelper FormHelper) Int(key string, defaultValue int) int{
 		return defaultValue
 	}
 
-	result,err := strconv.Atoi(value)
+	result, err := strconv.Atoi(value)
 
 	if err != nil {
 		return defaultValue
@@ -26,7 +26,7 @@ func (formHelper FormHelper) Int(key string, defaultValue int) int{
 	return result
 }
 
-func (formHelper FormHelper) String(key string, defaultValue string) string{
+func (formHelper FormHelper) String(key string, defaultValue string) string {
 
 	value := formHelper.Request.FormValue(key)
 
@@ -36,5 +36,3 @@ func (formHelper FormHelper) String(key string, defaultValue string) string{
 
 	return value
 }
-
-

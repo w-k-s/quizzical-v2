@@ -56,12 +56,8 @@ func init() {
 	m.Post("/category", sessionauth.LoginRequired, binding.Bind(models.Category{}), controllers.PostCategory)
 	m.Post("/question", sessionauth.LoginRequired, binding.Bind(models.Question{}), controllers.PostQuestion)
 
-	//for the sake of backwards compatibility, to be removed
-	m.Get("/categories", api.GetCategories)
-	m.Get("/questions", api.GetQuestions)
-
 	m.Get("/api/categories", api.GetJWTCategories)
-	m.Get("/api/questions",api.GetJWTQuestions)
+	m.Get("/api/questions", api.GetJWTQuestions)
 
 	http.Handle("/", m)
 }
