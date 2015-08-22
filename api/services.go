@@ -65,13 +65,21 @@ func GetJWTQuestions(dm *datastore.Manager, w http.ResponseWriter, req *http.Req
 
 		claims := utils.MapHelper{Map: token.Claims}
 		format := claims.String(ParameterFormat, FormatXML)
-		limit := claims.Int(ParameterLimit, DefaultLimit)
-		offset := claims.Int(ParameterOffset, DefaultOffset)
 		category := claims.String(ParameterCategory, "")
 
 		if len(category) == 0 {
 			http.Error(w, fmt.Errorf("Parameter '%s' is missing.", ParameterCategory).Error(), HttpStatusValidationError)
 			return nil
+		}
+
+		limit := DefaultLimit
+		if _limit,ok := token.Claims[ParameterLimit]; ok{
+			limit = int(_limit.(float64))
+		}
+
+		offset := DefaultOffset
+		if _offset,ok := token.Claims[ParameterOffset];ok{
+			offset = int(_offset.(float64))
 		}
 
 		questions, err := dm.QuestionStore.GetQuestions(req, limit,offset,category)
