@@ -40,7 +40,11 @@ func GetJWTCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Re
 
 		claims := utils.MapHelper{Map: token.Claims}
 		format := claims.String(ParameterFormat, FormatXML)
-		limit := claims.Int(ParameterLimit, DefaultLimit)
+
+		limit := DefaultLimit
+		if _limit,ok := token.Claims[ParameterLimit]; ok{
+			limit = int(_limit.(float64))
+		}
 
 		categories, err := dm.CategoryStore.GetAll(req, limit)
 

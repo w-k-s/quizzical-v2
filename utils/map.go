@@ -13,9 +13,7 @@ func (mapHelper MapHelper) Int(key string, defaultValue int) int {
 
 	r := mapHelper.Map[key]
 
-	if reflect.TypeOf(r).Kind() == reflect.Int ||
-		reflect.TypeOf(r).Kind() == reflect.Uint ||
-		reflect.TypeOf(r).Kind() == reflect.Float64 {
+	if reflect.TypeOf(r).Kind() == reflect.Int {
 		return r.(int)
 	}
 	if reflect.TypeOf(r).Kind() == reflect.String{
@@ -24,7 +22,6 @@ func (mapHelper MapHelper) Int(key string, defaultValue int) int {
 		if err == nil {
 			return num
 		}
-
 	}
 
 	return defaultValue

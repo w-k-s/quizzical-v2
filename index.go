@@ -55,6 +55,7 @@ func init() {
 	m.Post("/login", binding.Bind(models.User{}), controllers.PostLogin)
 	m.Post("/category", sessionauth.LoginRequired, binding.Bind(models.Category{}), controllers.PostCategory)
 	m.Post("/question", sessionauth.LoginRequired, binding.Bind(models.Question{}), controllers.PostQuestion)
+	
 
 	m.Get("/api/categories", api.GetJWTCategories)
 	m.Get("/api/questions", api.GetJWTQuestions)
