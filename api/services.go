@@ -1,15 +1,16 @@
 package api
 
 import (
-	"auth"
-	JWT "bitbucket.org/waqqas-abdulkareem/asfour_toolkit/handlers/jwt"
 	"datastore"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"auth"
 	"github.com/martini-contrib/render"
+	"github.com/dgrijalva/jwt-go"
 	"models"
 	"net/http"
 	"utils"
+	"errors"
+	JWT "bitbucket.org/waqqas-abdulkareem/asfour_toolkit/handlers/jwt"
 )
 
 const (
@@ -25,6 +26,60 @@ const (
 	HttpStatusValidationError = 422
 )
 
+//---------------------------------- API v2 -----------------------------------//
+
+type ResponseFormatter func(r * http.Request,w http.ResponseWriter, response interface{}, err error)
+
+type QuizzicalApi struct{
+	Consumer *jwt.Consumer
+	DB *datastore.Manager
+	ResponseFormatter ResponseFormatter
+}
+
+func (api * QuizzicalApi) Categories(r * http.Request, w http.ResponseWriter){
+
+	var resp interface{}
+
+	token,err := api.Consumer.ProcessTokenFromRequestParameter(r,"token",[]byte(auth.JWTSecret))
+
+	if err == nil {
+
+		limit := token.Int32("limit",DefaultLimit)
+		categories,err := api.DB.CategoryStore.GetAll(r,int(limit))
+
+		if err == nil{
+			resp = categories;
+		}
+	}
+
+	api.ResponseFormatter(r,w,resp,err)
+}
+
+func (api * QuizzicalApi) PostCategory(r * http.Request, w http.ResponseWriter){
+
+	var resp interface{}
+
+	token, err := api.Consumer.ProcessTokenFromRequestParameter(r,"token",[]byte(auth.JWTSecret))
+
+	if err != nil {
+		api.ResponseFormatter(r,w,nil,err)
+		return
+	}
+
+	name := token.String("name","")
+
+	if len(name) == 0 {
+		api.ResponseFormatter(r,w,nil,errors.New("Name can not be empty"))
+		return
+	}
+
+	category := models.Category{Name: name}
+	err = api.DB.CategoryStore.Save(r,&category)
+	resp = category;
+
+	api.ResponseFormatter(r,w,resp,err)
+}
+
 func jwtHandlerFactory(handler func(http.ResponseWriter, *http.Request, *jwt.Token) error) *JWT.Handler {
 
 	return JWT.NewHandler(
@@ -33,6 +88,8 @@ func jwtHandlerFactory(handler func(http.ResponseWriter, *http.Request, *jwt.Tok
 		handler,
 	)
 }
+
+//--------------------------------------------  API V1 -----------------------------------------------//
 
 func GetJWTCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
 
@@ -81,12 +138,12 @@ func GetJWTQuestions(dm *datastore.Manager, w http.ResponseWriter, req *http.Req
 			limit = int(_limit.(float64))
 		}
 
-		offset := DefaultOffset
+		/*offset := DefaultOffset
 		if _offset,ok := token.Claims[ParameterOffset];ok{
 			offset = int(_offset.(float64))
-		}
+		}*/
 
-		questions, err := dm.QuestionStore.GetQuestions(req, limit,offset,category)
+		questions, err := dm.QuestionStore.Random(req, category, limit)
 
 		if err != nil {
 			return err

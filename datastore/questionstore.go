@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"models"
 	"net/http"
+	"math/rand"
 )
 
 const (
@@ -123,6 +124,37 @@ func (s *QuestionStore) Save(request *http.Request, question *models.Question) e
 
 	question.Key = key.Encode()
 	return nil
+}
+
+func (s * QuestionStore) Random(request * http.Request, category string, limit int) ([]*models.Question,error){
+
+	if len(category) == 0 {
+		return nil,fmt.Errorf("category must not empty")
+	}
+
+	count,err := s.Count(request,category)
+
+	if err != nil{
+		return nil,err
+	}
+
+	if limit >= count {
+
+		return s.GetForCategory(request,category,limit)
+
+	}else{
+
+		/*
+		If there are 30 questions, and we wish to deliver 10,
+		then the offser should be such that offset + limit <= count.
+		Therefore, maxOffset = count = limit
+		*/
+		maxOffset := count - limit
+		offset := int(rand.Int63n(int64(maxOffset)))
+
+		return s.GetQuestions(request,limit,offset,category)
+	}
+
 }
 
 func (s *QuestionStore) Delete(request *http.Request, key string) error {

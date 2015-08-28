@@ -13,6 +13,8 @@ import (
 	"github.com/martini-contrib/sessions"
 	"models"
 	"net/http"
+		"github.com/dgrijalva/jwt-go"
+		"encoding/json"
 )
 
 const (
@@ -55,10 +57,34 @@ func init() {
 	m.Post("/login", binding.Bind(models.User{}), controllers.PostLogin)
 	m.Post("/category", sessionauth.LoginRequired, binding.Bind(models.Category{}), controllers.PostCategory)
 	m.Post("/question", sessionauth.LoginRequired, binding.Bind(models.Question{}), controllers.PostQuestion)
-	
 
 	m.Get("/api/categories", api.GetJWTCategories)
 	m.Get("/api/questions", api.GetJWTQuestions)
+
+	//-------------------------------------------------------------------------//
+
+  api2 := api.QuizzicalApi{
+		Consumer: jwt.NewConsumer("HS256"),
+		DB: dataManager,
+		ResponseFormatter: func(r * http.Request,w http.ResponseWriter, response interface{}, err error){
+
+			if err != nil{
+				http.Error(w,err.Error(),http.StatusInternalServerError)
+			}else{
+				w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+				w.WriteHeader(http.StatusOK)
+				if err := json.NewEncoder(w).Encode(response); err != nil {
+		        panic(err)
+		    }
+			}
+
+		},
+	}
+
+	m.Get("/api/v2/categories",api2.Categories)
+	m.Post("/api/v2/category",api2.PostCategory)
+
+	//-------------------------------------------------------------------------//
 
 	http.Handle("/", m)
 }
