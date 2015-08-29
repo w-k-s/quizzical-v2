@@ -36,6 +36,39 @@ type QuizzicalApi struct{
 	ResponseFormatter ResponseFormatter
 }
 
+type PagedResponse struct{
+	PageNumber int
+	PageSize int
+	PageCount int
+	LastPage bool
+	Page	interface{}
+}
+
+func NewPagedResponse(offset,limit,count int,page interface{}) *PagedResponse{
+
+	var pageNumber int
+	var pageCount int
+
+	if count > 0 {
+
+		fetchSize := limit;
+		if count < limit {
+			fetchSize = count;
+		}
+
+		pageNumber = offset/fetchSize
+		pageCount = count/fetchSize
+	}
+
+	return &PagedResponse{
+		PageNumber: pageNumber + 1,
+		PageSize: limit,
+		PageCount: pageCount,
+		LastPage: (pageNumber + 1)>= pageCount,
+		Page: page,
+	}
+}
+
 func (api * QuizzicalApi) Categories(r * http.Request, w http.ResponseWriter){
 
 	var resp interface{}
@@ -57,8 +90,6 @@ func (api * QuizzicalApi) Categories(r * http.Request, w http.ResponseWriter){
 
 func (api * QuizzicalApi) PostCategory(r * http.Request, w http.ResponseWriter){
 
-	var resp interface{}
-
 	token, err := api.Consumer.ProcessTokenFromRequestParameter(r,"token",[]byte(auth.JWTSecret))
 
 	if err != nil {
@@ -75,10 +106,43 @@ func (api * QuizzicalApi) PostCategory(r * http.Request, w http.ResponseWriter){
 
 	category := models.Category{Name: name}
 	err = api.DB.CategoryStore.Save(r,&category)
-	resp = category;
+	resp := category;
 
 	api.ResponseFormatter(r,w,resp,err)
 }
+
+func (api * QuizzicalApi) Questions(r * http.Request, w http.ResponseWriter){
+
+	token, err := api.Consumer.ProcessTokenFromRequestParameter(r,"token",[]byte(auth.JWTSecret))
+
+	if err != nil {
+		api.ResponseFormatter(r,w,nil,err); return
+	}
+
+	limit := int(token.Int32(ParameterLimit,DefaultLimit))
+	offset := int(token.Int32(ParameterOffset,DefaultOffset))
+	category := token.String(ParameterCategory,"")
+
+	if len(category) == 0{
+		api.ResponseFormatter(r,w,nil,errors.New("Category not provided"))
+	}
+
+	count, err := api.DB.QuestionStore.Count(r,category)
+
+	if err != nil {
+		api.ResponseFormatter(r,w,nil,err); return
+	}
+
+	questions, err := api.DB.QuestionStore.GetQuestions(r,limit,offset,category);
+
+	if err != nil {
+		api.ResponseFormatter(r,w,nil,err); return
+	}
+
+	api.ResponseFormatter(r,w,NewPagedResponse(offset,limit,count,questions),nil)
+}
+
+//--------------------------------------------  API V1 -----------------------------------------------//
 
 func jwtHandlerFactory(handler func(http.ResponseWriter, *http.Request, *jwt.Token) error) *JWT.Handler {
 
@@ -88,8 +152,6 @@ func jwtHandlerFactory(handler func(http.ResponseWriter, *http.Request, *jwt.Tok
 		handler,
 	)
 }
-
-//--------------------------------------------  API V1 -----------------------------------------------//
 
 func GetJWTCategories(dm *datastore.Manager, w http.ResponseWriter, req *http.Request, r render.Render) {
 

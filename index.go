@@ -15,6 +15,7 @@ import (
 	"net/http"
 		"github.com/dgrijalva/jwt-go"
 		"encoding/json"
+		"encoding/xml"
 )
 
 const (
@@ -22,6 +23,10 @@ const (
 	SessionRedirectUrl   = "/"
 	SessionRedirectParam = "forward"
 )
+
+type Encoder interface{
+	Encode(v interface{}) error
+}
 
 var categoryStore *datastore.CategoryStore
 var questionStore *datastore.QuestionStore
@@ -63,25 +68,43 @@ func init() {
 
 	//-------------------------------------------------------------------------//
 
+	consumer := jwt.NewConsumer("HS256")
+	consumer.SetJTIRequired(true)
+	consumer.SetExpirationTimeRequired(true)
+	consumer.SetIssuedAtRequired(true)
+	consumer.SetTokenLifespanInMinutesSinceIssue(2000)
+
   api2 := api.QuizzicalApi{
-		Consumer: jwt.NewConsumer("HS256"),
+		Consumer: consumer,
 		DB: dataManager,
 		ResponseFormatter: func(r * http.Request,w http.ResponseWriter, response interface{}, err error){
 
 			if err != nil{
 				http.Error(w,err.Error(),http.StatusInternalServerError)
-			}else{
-				w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-				w.WriteHeader(http.StatusOK)
-				if err := json.NewEncoder(w).Encode(response); err != nil {
-		        panic(err)
-		    }
+				return;
 			}
 
+			var contentType string
+			var encoder Encoder
+
+			if r.FormValue("format") == "json" {
+				contentType = "application/json; charset=UTF-8"
+				encoder = json.NewEncoder(w)
+			}else{
+				contentType = "text/xml"
+				encoder = xml.NewEncoder(w)
+			}
+
+			w.Header().Set("Content-Type", contentType)
+			w.WriteHeader(http.StatusOK)
+			if err =  encoder.Encode(response); err != nil{
+				panic(err)
+			}
 		},
 	}
 
 	m.Get("/api/v2/categories",api2.Categories)
+	m.Get("/api/v2/questions",api2.Questions)
 	m.Post("/api/v2/category",api2.PostCategory)
 
 	//-------------------------------------------------------------------------//
