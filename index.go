@@ -72,7 +72,7 @@ func init() {
 	consumer.SetJTIRequired(true)
 	consumer.SetExpirationTimeRequired(true)
 	consumer.SetIssuedAtRequired(true)
-	consumer.SetTokenLifespanInMinutesSinceIssue(2000)
+	consumer.SetTokenLifespanInMinutesSinceIssue(2 * 60 * 1000)
 
 	api2 := api.QuizzicalApi{
 		Consumer: consumer,

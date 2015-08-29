@@ -36,7 +36,7 @@ func (store *QuestionStore) GetQuestions(request *http.Request, limit, offset in
 		query = query.Offset(offset)
 	}
 
-	query = query.Order("Answer").Limit(limit)
+	query = query. /*.Order("Answer")*/ Limit(limit)
 
 	var questions []*models.Question
 
