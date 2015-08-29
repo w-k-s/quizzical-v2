@@ -6,6 +6,9 @@ import (
 	"controllers"
 	"datastore"
 	"encoding/gob"
+	"encoding/json"
+	"encoding/xml"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/render"
@@ -13,9 +16,6 @@ import (
 	"github.com/martini-contrib/sessions"
 	"models"
 	"net/http"
-		"github.com/dgrijalva/jwt-go"
-		"encoding/json"
-		"encoding/xml"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 	SessionRedirectParam = "forward"
 )
 
-type Encoder interface{
+type Encoder interface {
 	Encode(v interface{}) error
 }
 
@@ -74,14 +74,14 @@ func init() {
 	consumer.SetIssuedAtRequired(true)
 	consumer.SetTokenLifespanInMinutesSinceIssue(2000)
 
-  api2 := api.QuizzicalApi{
+	api2 := api.QuizzicalApi{
 		Consumer: consumer,
-		DB: dataManager,
-		ResponseFormatter: func(r * http.Request,w http.ResponseWriter, response interface{}, err error){
+		DB:       dataManager,
+		ResponseFormatter: func(r *http.Request, w http.ResponseWriter, response interface{}, err error) {
 
-			if err != nil{
-				http.Error(w,err.Error(),http.StatusInternalServerError)
-				return;
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
 
 			var contentType string
@@ -90,22 +90,22 @@ func init() {
 			if r.FormValue("format") == "json" {
 				contentType = "application/json; charset=UTF-8"
 				encoder = json.NewEncoder(w)
-			}else{
+			} else {
 				contentType = "text/xml"
 				encoder = xml.NewEncoder(w)
 			}
 
 			w.Header().Set("Content-Type", contentType)
 			w.WriteHeader(http.StatusOK)
-			if err =  encoder.Encode(response); err != nil{
+			if err = encoder.Encode(response); err != nil {
 				panic(err)
 			}
 		},
 	}
 
-	m.Get("/api/v2/categories",api2.Categories)
-	m.Get("/api/v2/questions",api2.Questions)
-	m.Post("/api/v2/category",api2.PostCategory)
+	m.Get("/api/v2/categories", api2.Categories)
+	m.Get("/api/v2/questions", api2.Questions)
+	m.Post("/api/v2/category", api2.PostCategory)
 
 	//-------------------------------------------------------------------------//
 

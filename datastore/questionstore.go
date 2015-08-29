@@ -4,9 +4,9 @@ import (
 	"appengine"
 	"appengine/datastore"
 	"fmt"
+	"math/rand"
 	"models"
 	"net/http"
-	"math/rand"
 )
 
 const (
@@ -126,33 +126,33 @@ func (s *QuestionStore) Save(request *http.Request, question *models.Question) e
 	return nil
 }
 
-func (s * QuestionStore) Random(request * http.Request, category string, limit int) ([]*models.Question,error){
+func (s *QuestionStore) Random(request *http.Request, category string, limit int) ([]*models.Question, error) {
 
 	if len(category) == 0 {
-		return nil,fmt.Errorf("category must not empty")
+		return nil, fmt.Errorf("category must not empty")
 	}
 
-	count,err := s.Count(request,category)
+	count, err := s.Count(request, category)
 
-	if err != nil{
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
 
 	if limit >= count {
 
-		return s.GetForCategory(request,category,limit)
+		return s.GetForCategory(request, category, limit)
 
-	}else{
+	} else {
 
 		/*
-		If there are 30 questions, and we wish to deliver 10,
-		then the offser should be such that offset + limit <= count.
-		Therefore, maxOffset = count = limit
+			If there are 30 questions, and we wish to deliver 10,
+			then the offser should be such that offset + limit <= count.
+			Therefore, maxOffset = count = limit
 		*/
 		maxOffset := count - limit
 		offset := int(rand.Int63n(int64(maxOffset)))
 
-		return s.GetQuestions(request,limit,offset,category)
+		return s.GetQuestions(request, limit, offset, category)
 	}
 
 }
