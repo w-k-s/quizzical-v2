@@ -3,75 +3,52 @@ package quizzical
 import (
 	"api"
 	"auth"
-	"controllers"
-	"datastore"
-	"encoding/gob"
-	"github.com/go-martini/martini"
-	"github.com/martini-contrib/binding"
-	"github.com/martini-contrib/render"
-	"github.com/martini-contrib/sessionauth"
-	"github.com/martini-contrib/sessions"
-	"models"
+	"github.com/gorilla/mux"
+	"time"
 	"net/http"
 )
 
-const (
-	SessionName          = "com.appspot.asfour-quizzical.session"
-	SessionRedirectUrl   = "/"
-	SessionRedirectParam = "forward"
-)
-
-var categoryStore *datastore.CategoryStore
-var questionStore *datastore.QuestionStore
 
 func init() {
 
-	registerModelsForTemplating()
+	router := mux.NewRouter()
+	api := setupQuizzicalAPI()
 
-	categoryStore = &datastore.CategoryStore{}
-	questionStore = &datastore.QuestionStore{}
-	dataManager := &datastore.Manager{CategoryStore: categoryStore, QuestionStore: questionStore}
+	apiSubrouter := router.PathPrefix("/api/v2/").Subrouter()
 
-	m := martini.Classic()
-	m.Use(render.Renderer(render.Options{
-		IndentJSON: true,
-		IndentXML:  true,
-		Charset:    "UTF-8",
-	}))
+	apiSubrouter.HandleFunc("/categories",api.HandleWith(endpoint.Category.List)).
+		Methods("GET")
 
-	store := sessions.NewCookieStore([]byte(auth.SessionAuthenticationKey))
-	m.Use(sessions.Sessions(SessionName, store))
-	m.Use(sessionauth.SessionUser(GenerateAnonymousUser))
-	sessionauth.RedirectUrl = SessionRedirectUrl
-	sessionauth.RedirectParam = SessionRedirectParam
+	apiSubrouter.HandleFunc("/category",api.HandleWith(endpoint.Category.Post)).
+		Methods("POST")
 
-	//Allow Martini to inject the datastore manager as a service.
-	m.Map(dataManager)
+	apiSubrouter.HandleFunc("/questions",api.HandleWith(endpoint.Question.List)).
+		Methods("GET")
 
-	m.Get("/", controllers.GetIndex)
-	m.Get("/logout", sessionauth.LoginRequired, controllers.GetLogout)
-	m.Get("/admin", sessionauth.LoginRequired, controllers.GetAdmin)
+	apiSubrouter.HandleFunc("/question",api.HandleWith(endpoint.Question.Post)).
+		Methods("POST")
 
-	m.Post("/login", binding.Bind(models.User{}), controllers.PostLogin)
-	m.Post("/category", sessionauth.LoginRequired, binding.Bind(models.Category{}), controllers.PostCategory)
-	m.Post("/question", sessionauth.LoginRequired, binding.Bind(models.Question{}), controllers.PostQuestion)
-	
 
-	m.Get("/api/categories", api.GetJWTCategories)
-	m.Get("/api/questions", api.GetJWTQuestions)
-
-	http.Handle("/", m)
+	http.Handle("/", router)
 }
 
-// GetAnonymousUser should generate an anonymous user model
-// for all sessions. This should be an unauthenticated 0 value struct.
-func GenerateAnonymousUser() sessionauth.User {
-	return &models.User{}
+func setupQuizzicalAPI() *QuizzicalAPI{
+
+	return &QuizzicalApi{
+		CategoryStore: &datastore.CategoryStore{},
+		QuestionStore: &datastore.QuestionStore{},
+		Consumer:	   setupConsumer(),
+	}
+
 }
 
-func registerModelsForTemplating() {
+func setupConsumer() *jwt.Consumer{
 
-	gob.Register(models.Category{})
-	gob.Register(models.Question{})
+	consumer := jwt.NewConsumer("HS256")
+	consumer.SetJTIRequired(true)
+	consumer.SetExpirationTimeRequired(true)
+	consumer.SetIssuedAtRequired(true)
+	consumer.SetTokenLifespanInMinutesSinceIssue(2 * time.Minute)
 
+	return consumer
 }

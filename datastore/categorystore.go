@@ -14,13 +14,11 @@ const (
 
 type CategoryStore struct{}
 
-func (store *CategoryStore) GetAll(request *http.Request, limit int) ([]*models.Category, error) {
+func (store *CategoryStore) GetAll(context appengine.Context, limit int) ([]*models.Category, error) {
 
 	if limit <= 0 {
 		limit = DefaultCategoryLimit
 	}
-
-	context := appengine.NewContext(request)
 
 	query := datastore.NewQuery(EntityCategory).Limit(limit)
 
@@ -44,9 +42,7 @@ func (store *CategoryStore) GetAll(request *http.Request, limit int) ([]*models.
 	return categories, nil
 }
 
-func (s *CategoryStore) Save(request *http.Request, category *models.Category) error {
-
-	context := appengine.NewContext(request)
+func (s *CategoryStore) Save(context appengine.Context, category *models.Category) error {
 
 	completeKey := datastore.NewKey(context, EntityCategory, category.Hash(), 0, nil)
 	key, err := datastore.Put(context, completeKey, category)
