@@ -5,6 +5,8 @@ import(
 	"bitbucket.org/waqqas-abdulkareem/jwt-go"
 	"fmt"
 	"api"
+	"models"
+	"encoding/json"
 )
 
 
@@ -23,11 +25,27 @@ func (endpoint *QuestionEndpoint) List(r * http.Request,token * jwt.Token, api *
 	limit := int(token.Int32(ParamNameLimit,DefaultLimit))
 	offset := int(token.Int32(ParamNameOffset,DefaultLimit))
 
-	return api.QuestionStore.GetAll(api.Context, limit, offset, category)
+	questions, err :=  api.QuestionStore.GetAll(api.Context, limit, offset, category)
 
+	return Response{Data: questions},err
 }
 
 func (endpoint *QuestionEndpoint) Post(r * http.Request,token * jwt.Token, api * api.QuizzicalAPI) (interface{},error){
 
-	return nil,fmt.Errorf("No Implementation")
+	var question models.Question
+
+	jsonQuestion,err := json.Marshal(token.Claims[ParamNameQuestion])
+	
+	if jsonQuestion != nil {
+		
+		err = json.Unmarshal(jsonQuestion,&question)
+		
+		if err == nil {
+			
+			err = api.QuestionStore.Save(api.Context,&question)
+
+		}
+	}
+
+	return Response{Data: question},err
 }

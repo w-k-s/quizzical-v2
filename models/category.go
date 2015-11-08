@@ -5,8 +5,8 @@ import (
 )
 
 type Category struct {
-	Key  string `xml:"key" json:"key" datastore:"-"`
-	Name string `form:"name" binding:"required"`
+	Key  string `datastore:"-"`
+	Name string 
 }
 
 func (c *Category) Hash() string {

@@ -93,9 +93,7 @@ func (s *QuestionStore) Find(request *http.Request, key string) (*models.Questio
 	return question, nil
 }
 
-func (s *QuestionStore) Save(request *http.Request, question *models.Question) error {
-
-	context := appengine.NewContext(request)
+func (s *QuestionStore) Save(context appengine.Context, question *models.Question) error {
 
 	completeKey := datastore.NewKey(context, EntityQuestion, question.Hash(), 0, nil)
 	key, err := datastore.Put(context, completeKey, question)
