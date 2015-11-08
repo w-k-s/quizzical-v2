@@ -3,7 +3,6 @@ package datastore
 import (
 	"appengine"
 	"appengine/datastore"
-	"fmt"
 	"models"
 	"net/http"
 )
@@ -17,13 +16,11 @@ const (
 
 type QuestionStore struct{}
 
-func (store *QuestionStore) GetQuestions(request *http.Request, limit, offset int, category string) ([]*models.Question, error) {
+func (store *QuestionStore) GetAll(context appengine.Context, limit, offset int, category string) ([]*models.Question, error) {
 
 	if limit <= 0 {
 		limit = DefaultQuestionLimit
 	}
-
-	context := appengine.NewContext(request)
 
 	query := datastore.NewQuery(EntityQuestion)
 
@@ -56,20 +53,6 @@ func (store *QuestionStore) GetQuestions(request *http.Request, limit, offset in
 
 	return questions, nil
 
-}
-
-func (store *QuestionStore) GetAll(request *http.Request, limit int) ([]*models.Question, error) {
-
-	return store.GetQuestions(request, limit, QueryNoOffset, QueryNoCategory)
-}
-
-func (store *QuestionStore) GetForCategory(request *http.Request, category string, limit int) ([]*models.Question, error) {
-
-	if len(category) == 0 {
-		return nil, fmt.Errorf("category must not empty")
-	}
-
-	return store.GetQuestions(request, limit, QueryNoOffset, category)
 }
 
 func (s *QuestionStore) Count(request *http.Request, category string) (int, error) {
@@ -117,12 +100,11 @@ func (s *QuestionStore) Save(request *http.Request, question *models.Question) e
 	completeKey := datastore.NewKey(context, EntityQuestion, question.Hash(), 0, nil)
 	key, err := datastore.Put(context, completeKey, question)
 
-	if err != nil {
-		return err
+	if err == nil {
+		question.Key = key.Encode()
 	}
-
-	question.Key = key.Encode()
-	return nil
+	
+	return err
 }
 
 func (s *QuestionStore) Delete(request *http.Request, key string) error {
@@ -130,14 +112,9 @@ func (s *QuestionStore) Delete(request *http.Request, key string) error {
 	context := appengine.NewContext(request)
 	decodedKey, err := datastore.DecodeKey(key)
 
-	if err != nil {
-		return err
+	if err == nil {
+		err = datastore.Delete(context, decodedKey)
 	}
 
-	err = datastore.Delete(context, decodedKey)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

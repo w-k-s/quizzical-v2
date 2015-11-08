@@ -13,11 +13,11 @@ type QuizzicalAPI struct{
 	CategoryStore *datastore.CategoryStore
 	QuestionStore *datastore.QuestionStore
 	Consumer * jwt.Consumer
-	Context * appengine.Context
+	Context appengine.Context
 }
 
-func (api * QuizzicalAPI) Authenticate(r * http.Request) (jwt.Token,error){
-	return consumer.ValidateTokenFromRequestParameter(r,"token",[]byte(auth.Key))
+func (api * QuizzicalAPI) Authenticate(r * http.Request) (*jwt.Token,error){
+	return api.Consumer.ValidateTokenFromRequestParameter(r,"token",[]byte(auth.Key))
 }
 
 func (api * QuizzicalAPI) Error(w http.ResponseWriter, err error,status int){
@@ -46,7 +46,9 @@ func (api * QuizzicalAPI) Success(w http.ResponseWriter, body interface{}){
 	w.Write(js)
 }
 
-func (api *QuizzicalAPI) HandleWith(handler func(*http.Request, *QuizzicalAPI, *jwt.Token)) func(http.ResponseWriter, *http.Request){
+type APIHandler func(*http.Request, *jwt.Token, *QuizzicalAPI) (interface {}, error)
+
+func (api *QuizzicalAPI) HandleWith(handler APIHandler) func(http.ResponseWriter, *http.Request){
 	return func(w http.ResponseWriter, r * http.Request){
 
 		token, err :=api.Authenticate(r)
@@ -55,9 +57,9 @@ func (api *QuizzicalAPI) HandleWith(handler func(*http.Request, *QuizzicalAPI, *
 			return
 		}
 
-		api.Context := appengine.NewContext(r)
+		api.Context = appengine.NewContext(r)
 
-		result, err := handler(r,api,token)
+		result, err := handler(r,token,api)
 		if err != nil {
 			api.Error(w, err, http.StatusInternalServerError)
 			return

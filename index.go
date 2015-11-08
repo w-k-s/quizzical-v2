@@ -2,10 +2,12 @@ package quizzical
 
 import (
 	"api"
-	"auth"
 	"github.com/gorilla/mux"
-	"time"
+	_"time"
 	"net/http"
+	"endpoint"
+	"bitbucket.org/waqqas-abdulkareem/jwt-go"
+	"datastore"
 )
 
 
@@ -32,9 +34,9 @@ func init() {
 	http.Handle("/", router)
 }
 
-func setupQuizzicalAPI() *QuizzicalAPI{
+func setupQuizzicalAPI() *api.QuizzicalAPI{
 
-	return &QuizzicalApi{
+	return &api.QuizzicalAPI{
 		CategoryStore: &datastore.CategoryStore{},
 		QuestionStore: &datastore.QuestionStore{},
 		Consumer:	   setupConsumer(),
@@ -46,9 +48,9 @@ func setupConsumer() *jwt.Consumer{
 
 	consumer := jwt.NewConsumer("HS256")
 	consumer.SetJTIRequired(true)
-	consumer.SetExpirationTimeRequired(true)
-	consumer.SetIssuedAtRequired(true)
-	consumer.SetTokenLifespanInMinutesSinceIssue(2 * time.Minute)
+	consumer.SetExpirationTimeRequired(false)
+	consumer.SetIssuedAtRequired(false)
+	consumer.SetTokenLifespanInMinutesSinceIssue(2)
 
 	return consumer
 }
