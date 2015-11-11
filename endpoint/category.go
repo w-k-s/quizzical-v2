@@ -37,6 +37,8 @@ func (endpoint *CategoryEndpoint) Post(r * http.Request,token * jwt.Token, api *
 			
 			err = api.CategoryStore.Save(api.Context,&category)	
 		
+		}else{
+			err = ErrorWrapper{OriginalError: err}
 		}
 		
 	}

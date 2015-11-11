@@ -46,6 +46,8 @@ func (endpoint *QuestionEndpoint) Post(r * http.Request,token * jwt.Token, api *
 			
 			err = api.QuestionStore.Save(api.Context,&question)
 
+		}else{
+			err = ErrorWrapper{Message: err}
 		}
 	}
 
