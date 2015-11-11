@@ -29,14 +29,17 @@ func (endpoint *CategoryEndpoint) Post(r * http.Request,token * jwt.Token, api *
 	
 	if jsonCategory != nil {
 		
-		err = json.Unmarshal(jsonCategory,&category)
+		_ = json.Unmarshal(jsonCategory,&category)
 		
+		err = category.Validate()
+
 		if err == nil {
 			
-			err = api.CategoryStore.Save(api.Context,&category)
-
+			err = api.CategoryStore.Save(api.Context,&category)	
+		
 		}
+		
 	}
 
-	return category,err
+	return Response{Data: category},err
 }

@@ -30,6 +30,12 @@ func init() {
 	apiSubrouter.HandleFunc("/question",api.HandleWith(endpoint.Question.Post)).
 		Methods("POST")
 
+	apiSubrouter.HandleFunc("/panic",func(w http.ResponseWriter, r * http.Request){
+
+		var s interface{} = "string"
+		_ = s.(int32)
+
+	}).Methods("GET")
 
 	http.Handle("/", router)
 }

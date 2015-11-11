@@ -38,8 +38,10 @@ func (endpoint *QuestionEndpoint) Post(r * http.Request,token * jwt.Token, api *
 	
 	if jsonQuestion != nil {
 		
-		err = json.Unmarshal(jsonQuestion,&question)
+		_ = json.Unmarshal(jsonQuestion,&question)
 		
+		err = question.Validate()
+
 		if err == nil {
 			
 			err = api.QuestionStore.Save(api.Context,&question)

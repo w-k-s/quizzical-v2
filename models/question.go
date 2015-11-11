@@ -3,26 +3,25 @@ package models
 import (
 	"encoding/xml"
 	"utils"
+	"gopkg.in/validator.v2"
 )
 
 type Question struct {
 	XMLName  xml.Name `xml:"question" json:"-"` //I made the mistake of not specifying datastore:"-" when I first created this model.
 	Key      string   `xml:"key" json:"key" datastore:"-"`
-	Question string   `xml:"ask" form:"question" binding:"required"`
-	Answer   string   `xml:"correct,attr" datastore:",noindex" form:"answer" binding:"required"`
-	Category string   `xml:"-" form:"category" binding:"required"`
-	A        string   `xml:"A" datastore:",noindex" form:"a" binding:"required"`
-	B        string   `xml:"B" datastore:",noindex" form:"b" binding:"required"`
-	C        string   `xml:"C" datastore:",noindex" form:"c" binding:"required"`
-	D        string   `xml:"D" datastore:",noindex" form:"d" binding:"required"`
+	Question string   `validate:"nonzero"`
+	Answer   string   `datastore:",noindex" validate:"nonzero,regexp=[ABCD],min=1,max=1"`
+	Category string   `validate:"nonzero"`
+	A        string   `validate:"nonzero"`
+	B        string   `validate:"nonzero"`
+	C        string   `validate:"nonzero"`
+	D        string   `validate:"nonzero"`
 }
 
 func (q *Question) Hash() string {
 	return utils.Hash(q.Question, q.Answer, q.Category)
 }
 
-type Questions struct {
-	XMLName   xml.Name `xml:"Questions" json:"-"`
-	Category  string   `xml:"Title,attr"`
-	Questions []*Question
+func (q *Question) Validate() error{
+	return validator.Validate(q)
 }

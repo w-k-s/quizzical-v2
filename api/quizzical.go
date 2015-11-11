@@ -23,7 +23,7 @@ func (api * QuizzicalAPI) Authenticate(r * http.Request) (*jwt.Token,error){
 func (api * QuizzicalAPI) Error(w http.ResponseWriter, err error,status int){
 
 	w.WriteHeader(status)
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	js, jsonerr := json.Marshal(err)
 	if jsonerr != nil{
@@ -36,7 +36,7 @@ func (api * QuizzicalAPI) Error(w http.ResponseWriter, err error,status int){
 func (api * QuizzicalAPI) Success(w http.ResponseWriter, body interface{}){
  
 	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	js, err := json.Marshal(body)
 	if err != nil {
