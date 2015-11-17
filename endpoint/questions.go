@@ -23,7 +23,7 @@ func (endpoint *QuestionEndpoint) List(r * http.Request,token * jwt.Token, api *
 	}
 
 	limit := int(token.Int32(ParamNameLimit,DefaultLimit))
-	offset := int(token.Int32(ParamNameOffset,DefaultLimit))
+	offset := int(token.Int32(ParamNameOffset,DefaultOffset))
 
 	questions, err :=  api.QuestionStore.GetAll(api.Context, limit, offset, category)
 
@@ -46,10 +46,21 @@ func (endpoint *QuestionEndpoint) Post(r * http.Request,token * jwt.Token, api *
 			
 			err = api.QuestionStore.Save(api.Context,&question)
 
-		}else{
-			err = ErrorWrapper{Message: err}
 		}
 	}
 
 	return Response{Data: question},err
+}
+
+func (endpoint * QuestionEndpoint) Delete(r * http.Request, token * jwt.Token, api * api.QuizzicalAPI) (interface{},error){
+
+	key, present := token.Claims[ParamNameKey].(string)
+
+	if !present {
+		return nil, fmt.Errorf("Required Parameter '%s' not present in token claims.",ParamNameKey)
+	}
+
+	err := api.QuestionStore.Delete(api.Context, key)
+
+	return struct{}{},err
 }

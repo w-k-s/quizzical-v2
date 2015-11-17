@@ -33,7 +33,7 @@ func (store *QuestionStore) GetAll(context appengine.Context, limit, offset int,
 	}
 
 	query = query.Limit(limit)
-
+	
 	var questions []*models.Question
 
 	keys, err := query.GetAll(context, &questions)
@@ -98,16 +98,17 @@ func (s *QuestionStore) Save(context appengine.Context, question *models.Questio
 	completeKey := datastore.NewKey(context, EntityQuestion, question.Hash(), 0, nil)
 	key, err := datastore.Put(context, completeKey, question)
 
-	if err == nil {
-		question.Key = key.Encode()
+	if err != nil {
+		return err
 	}
-	
-	return err
+
+	question.Key = key.Encode()
+
+	return nil
 }
 
-func (s *QuestionStore) Delete(request *http.Request, key string) error {
+func (s *QuestionStore) Delete(context appengine.Context, key string) error {
 
-	context := appengine.NewContext(request)
 	decodedKey, err := datastore.DecodeKey(key)
 
 	if err == nil {

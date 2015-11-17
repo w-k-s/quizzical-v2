@@ -22,10 +22,11 @@ func (api * QuizzicalAPI) Authenticate(r * http.Request) (*jwt.Token,error){
 
 func (api * QuizzicalAPI) Error(w http.ResponseWriter, err error,status int){
 
+	
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	w.WriteHeader(status)
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	js, jsonerr := json.Marshal(err)
+	js, jsonerr := json.MarshalIndent(struct{Error string}{Error: err.Error()},"","  ")
 	if jsonerr != nil{
 		panic(jsonerr)
 	}
@@ -38,7 +39,7 @@ func (api * QuizzicalAPI) Success(w http.ResponseWriter, body interface{}){
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	js, err := json.Marshal(body)
+	js, err := json.MarshalIndent(body,"","  ")
 	if err != nil {
 		panic(err)
 	}

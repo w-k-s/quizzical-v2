@@ -8,6 +8,7 @@ import (
 	"endpoint"
 	"bitbucket.org/waqqas-abdulkareem/jwt-go"
 	"datastore"
+	"os"
 )
 
 
@@ -30,12 +31,8 @@ func init() {
 	apiSubrouter.HandleFunc("/question",api.HandleWith(endpoint.Question.Post)).
 		Methods("POST")
 
-	apiSubrouter.HandleFunc("/panic",func(w http.ResponseWriter, r * http.Request){
-
-		var s interface{} = "string"
-		_ = s.(int32)
-
-	}).Methods("GET")
+	apiSubrouter.HandleFunc("/question",api.HandleWith(endpoint.Question.Delete)).
+		Methods("DELETE")
 
 	http.Handle("/", router)
 }
@@ -54,9 +51,21 @@ func setupConsumer() *jwt.Consumer{
 
 	consumer := jwt.NewConsumer("HS256")
 	consumer.SetJTIRequired(true)
-	consumer.SetExpirationTimeRequired(false)
-	consumer.SetIssuedAtRequired(false)
+	consumer.SetExpirationTimeRequired(!isDevelopmentMode())
+	consumer.SetIssuedAtRequired(!isDevelopmentMode())
 	consumer.SetTokenLifespanInMinutesSinceIssue(2)
 
 	return consumer
+}
+
+func isDevelopmentMode() bool{
+
+	var env []string = os.Environ()
+	for i := 0; i < len(env); i++ {
+		if env[i] == "RUN_WITH_DEVAPPSERVER=1" {
+			return true
+		}
+	}
+
+	return false
 }
