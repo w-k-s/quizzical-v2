@@ -33,7 +33,7 @@ func (store *QuestionStore) GetAll(context appengine.Context, limit, offset int,
 	}
 
 	query = query.Limit(limit)
-	
+
 	var questions []*models.Question
 
 	keys, err := query.GetAll(context, &questions)

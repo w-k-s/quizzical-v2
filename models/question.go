@@ -2,8 +2,8 @@ package models
 
 import (
 	"encoding/xml"
-	"utils"
 	"gopkg.in/validator.v2"
+	"utils"
 )
 
 type Question struct {
@@ -22,6 +22,6 @@ func (q *Question) Hash() string {
 	return utils.Hash(q.Question, q.Answer, q.Category)
 }
 
-func (q *Question) Validate() error{
+func (q *Question) Validate() error {
 	return validator.Validate(q)
 }

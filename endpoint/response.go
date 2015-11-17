@@ -1,5 +1,5 @@
 package endpoint
 
-type Response struct{
+type Response struct {
 	Data interface{} `json:"data"`
 }

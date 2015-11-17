@@ -1,8 +1,8 @@
 package models
 
 import (
-	"utils"
 	"gopkg.in/validator.v2"
+	"utils"
 )
 
 type Category struct {
@@ -10,12 +10,10 @@ type Category struct {
 	Name string `validate:"nonzero"`
 }
 
-func (c * Category) Validate() error{
-	return validator.Validate(c);
+func (c *Category) Validate() error {
+	return validator.Validate(c)
 }
 
 func (c *Category) Hash() string {
 	return utils.Hash(c.Name)
 }
-
-

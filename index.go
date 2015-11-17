@@ -2,15 +2,14 @@ package quizzical
 
 import (
 	"api"
-	"github.com/gorilla/mux"
-	_"time"
-	"net/http"
-	"endpoint"
 	"bitbucket.org/waqqas-abdulkareem/jwt-go"
 	"datastore"
+	"endpoint"
+	"github.com/gorilla/mux"
+	"net/http"
 	"os"
+	_ "time"
 )
-
 
 func init() {
 
@@ -19,35 +18,35 @@ func init() {
 
 	apiSubrouter := router.PathPrefix("/api/v2/").Subrouter()
 
-	apiSubrouter.HandleFunc("/categories",api.HandleWith(endpoint.Category.List)).
+	apiSubrouter.HandleFunc("/categories", api.HandleWith(endpoint.Category.List)).
 		Methods("GET")
 
-	apiSubrouter.HandleFunc("/category",api.HandleWith(endpoint.Category.Post)).
+	apiSubrouter.HandleFunc("/category", api.HandleWith(endpoint.Category.Post)).
 		Methods("POST")
 
-	apiSubrouter.HandleFunc("/questions",api.HandleWith(endpoint.Question.List)).
+	apiSubrouter.HandleFunc("/questions", api.HandleWith(endpoint.Question.List)).
 		Methods("GET")
 
-	apiSubrouter.HandleFunc("/question",api.HandleWith(endpoint.Question.Post)).
+	apiSubrouter.HandleFunc("/question", api.HandleWith(endpoint.Question.Post)).
 		Methods("POST")
 
-	apiSubrouter.HandleFunc("/question",api.HandleWith(endpoint.Question.Delete)).
+	apiSubrouter.HandleFunc("/question", api.HandleWith(endpoint.Question.Delete)).
 		Methods("DELETE")
 
 	http.Handle("/", router)
 }
 
-func setupQuizzicalAPI() *api.QuizzicalAPI{
+func setupQuizzicalAPI() *api.QuizzicalAPI {
 
 	return &api.QuizzicalAPI{
 		CategoryStore: &datastore.CategoryStore{},
 		QuestionStore: &datastore.QuestionStore{},
-		Consumer:	   setupConsumer(),
+		Consumer:      setupConsumer(),
 	}
 
 }
 
-func setupConsumer() *jwt.Consumer{
+func setupConsumer() *jwt.Consumer {
 
 	consumer := jwt.NewConsumer("HS256")
 	consumer.SetJTIRequired(true)
@@ -58,7 +57,7 @@ func setupConsumer() *jwt.Consumer{
 	return consumer
 }
 
-func isDevelopmentMode() bool{
+func isDevelopmentMode() bool {
 
 	var env []string = os.Environ()
 	for i := 0; i < len(env); i++ {

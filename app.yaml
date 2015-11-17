@@ -4,11 +4,9 @@ runtime: go
 api_version: go1
 
 handlers:
-- url: /css
-  static_dir: templates/css
-
-- url: /images
-  static_dir: templates/images
-
 - url: /.*
   script: quizzical
+
+error_handlers:
+- mime_type: application/json
+  file: static/panic_error.json
