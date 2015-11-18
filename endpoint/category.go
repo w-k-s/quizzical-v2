@@ -13,14 +13,14 @@ type CategoryEndpoint struct{}
 
 var Category CategoryEndpoint
 
-func (endpoint *CategoryEndpoint) List(r *http.Request, token *jwt.Token, api *api.QuizzicalAPI) (interface{}, error) {
+func (endpoint *CategoryEndpoint) List(r *http.Request, token *jwt.Token, quizApi *api.QuizzicalAPI) (interface{}, error) {
 
-	categories, err := api.CategoryStore.GetAll(api.Context, int(token.Int32(ParamNameLimit, DefaultLimit)))
+	categories, err := quizApi.CategoryStore.GetAll(quizApi.Context, int(token.Int32(ParamNameLimit, DefaultLimit)))
 
-	return Response{Data: categories}, err
+	return api.Response{Data: categories}, err
 }
 
-func (endpoint *CategoryEndpoint) Post(r *http.Request, token *jwt.Token, api *api.QuizzicalAPI) (interface{}, error) {
+func (endpoint *CategoryEndpoint) Post(r *http.Request, token *jwt.Token, quizApi *api.QuizzicalAPI) (interface{}, error) {
 
 	var category models.Category
 
@@ -34,11 +34,11 @@ func (endpoint *CategoryEndpoint) Post(r *http.Request, token *jwt.Token, api *a
 
 		if err == nil {
 
-			err = api.CategoryStore.Save(api.Context, &category)
+			err = quizApi.CategoryStore.Save(quizApi.Context, &category)
 
 		}
 
 	}
 
-	return Response{Data: category}, err
+	return api.Response{Data: category}, err
 }

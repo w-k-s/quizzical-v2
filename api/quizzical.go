@@ -6,6 +6,7 @@ import (
 	"bitbucket.org/waqqas-abdulkareem/jwt-go"
 	"datastore"
 	"encoding/json"
+	"encoding/xml"
 	"net/http"
 )
 
@@ -20,30 +21,31 @@ func (api *QuizzicalAPI) Authenticate(r *http.Request) (*jwt.Token, error) {
 	return api.Consumer.ValidateTokenFromRequestParameter(r, "token", []byte(auth.Key))
 }
 
-func (api *QuizzicalAPI) Error(w http.ResponseWriter, err error, status int) {
 
-	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	w.WriteHeader(status)
+func (api * QuizzicalAPI) Respond(w http.ResponseWriter, r * http.Request, body interface{}, status int ){
 
-	js, jsonerr := json.MarshalIndent(struct{ Error string }{Error: err.Error()}, "", "  ")
-	if jsonerr != nil {
-		panic(jsonerr)
+	var contentType string
+	var content []byte
+	var err error
+
+	if r.Header.Get("Accept") == "application/xml" {
+
+		contentType = "application/xml; charset=UTF-8"
+		content, err = xml.Marshal(body)
+
+	}else{
+
+		contentType = "application/json; charset=UTF-8"
+		content, err = json.MarshalIndent(body, "", "  ")
 	}
 
-	w.Write(js)
-}
-
-func (api *QuizzicalAPI) Success(w http.ResponseWriter, body interface{}) {
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	js, err := json.MarshalIndent(body, "", "  ")
 	if err != nil {
 		panic(err)
 	}
 
-	w.Write(js)
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", contentType)
+	w.Write(content)
 }
 
 type APIHandler func(*http.Request, *jwt.Token, *QuizzicalAPI) (interface{}, error)
@@ -53,7 +55,7 @@ func (api *QuizzicalAPI) HandleWith(handler APIHandler) func(http.ResponseWriter
 
 		token, err := api.Authenticate(r)
 		if err != nil {
-			api.Error(w, err, http.StatusUnauthorized)
+			api.Respond(w, r,NewError(err), http.StatusUnauthorized)
 			return
 		}
 
@@ -61,10 +63,10 @@ func (api *QuizzicalAPI) HandleWith(handler APIHandler) func(http.ResponseWriter
 
 		result, err := handler(r, token, api)
 		if err != nil {
-			api.Error(w, err, http.StatusInternalServerError)
+			api.Respond(w, r,NewError(err), http.StatusInternalServerError)
 			return
 		}
 
-		api.Success(w, result)
+		api.Respond(w, r, result, http.StatusOK)
 	}
 }

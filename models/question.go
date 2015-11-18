@@ -7,8 +7,8 @@ import (
 )
 
 type Question struct {
-	XMLName  xml.Name `xml:"question" json:"-"` //I made the mistake of not specifying datastore:"-" when I first created this model.
-	Key      string   `xml:"key" json:"key" datastore:"-"`
+	XMLName  xml.Name `xml:"Question" json:"-"` //I made the mistake of not specifying datastore:"-" when I first created this model.
+	Key      string   `datastore:"-"`
 	Question string   `validate:"nonzero"`
 	Answer   string   `datastore:",noindex" validate:"nonzero,regexp=[ABCD],min=1,max=1"`
 	Category string   `validate:"nonzero"`
