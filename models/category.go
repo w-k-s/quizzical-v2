@@ -7,9 +7,9 @@ import (
 )
 
 type Category struct {
-	XMLName  xml.Name `xml:"Category" json:"-"`
-	Key  string `datastore:"-"`
-	Name string `validate:"nonzero"`
+	XMLName xml.Name `xml:"Category" json:"-"`
+	Key     string   `datastore:"-"`
+	Name    string   `validate:"nonzero"`
 }
 
 func (c *Category) Validate() error {

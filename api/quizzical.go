@@ -21,8 +21,7 @@ func (api *QuizzicalAPI) Authenticate(r *http.Request) (*jwt.Token, error) {
 	return api.Consumer.ValidateTokenFromRequestParameter(r, "token", []byte(auth.Key))
 }
 
-
-func (api * QuizzicalAPI) Respond(w http.ResponseWriter, r * http.Request, body interface{}, status int ){
+func (api *QuizzicalAPI) Respond(w http.ResponseWriter, r *http.Request, body interface{}, status int) {
 
 	var contentType string
 	var content []byte
@@ -33,7 +32,7 @@ func (api * QuizzicalAPI) Respond(w http.ResponseWriter, r * http.Request, body 
 		contentType = "application/xml; charset=UTF-8"
 		content, err = xml.Marshal(body)
 
-	}else{
+	} else {
 
 		contentType = "application/json; charset=UTF-8"
 		content, err = json.MarshalIndent(body, "", "  ")
@@ -43,7 +42,7 @@ func (api * QuizzicalAPI) Respond(w http.ResponseWriter, r * http.Request, body 
 		panic(err)
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(status)
 	w.Header().Set("Content-Type", contentType)
 	w.Write(content)
 }
@@ -55,15 +54,16 @@ func (api *QuizzicalAPI) HandleWith(handler APIHandler) func(http.ResponseWriter
 
 		token, err := api.Authenticate(r)
 		if err != nil {
-			api.Respond(w, r,NewError(err), http.StatusUnauthorized)
+			api.Respond(w, r, NewError(err), http.StatusUnauthorized)
 			return
 		}
 
 		api.Context = appengine.NewContext(r)
+		api.Context.Infof(token.String())
 
 		result, err := handler(r, token, api)
 		if err != nil {
-			api.Respond(w, r,NewError(err), http.StatusInternalServerError)
+			api.Respond(w, r, NewError(err), http.StatusInternalServerError)
 			return
 		}
 

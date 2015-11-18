@@ -1,7 +1,7 @@
 package endpoint
 
 import (
-	"api" 
+	"api"
 	"bitbucket.org/waqqas-abdulkareem/jwt-go"
 	"encoding/json"
 	"fmt"
@@ -21,8 +21,8 @@ func (endpoint *QuestionEndpoint) List(r *http.Request, token *jwt.Token, quizAp
 		return nil, fmt.Errorf("Required Parameter '%s' not present in token claims.", ParamNameCategory)
 	}
 
-	limit := int(token.Int32(ParamNameLimit, DefaultLimit))
-	offset := int(token.Int32(ParamNameOffset, DefaultOffset))
+	limit := int(token.GetInt32(ParamNameLimit, DefaultLimit))
+	offset := int(token.GetInt32(ParamNameOffset, DefaultOffset))
 
 	questions, err := quizApi.QuestionStore.GetAll(quizApi.Context, limit, offset, category)
 

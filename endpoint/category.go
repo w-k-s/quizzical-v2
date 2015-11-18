@@ -15,7 +15,7 @@ var Category CategoryEndpoint
 
 func (endpoint *CategoryEndpoint) List(r *http.Request, token *jwt.Token, quizApi *api.QuizzicalAPI) (interface{}, error) {
 
-	categories, err := quizApi.CategoryStore.GetAll(quizApi.Context, int(token.Int32(ParamNameLimit, DefaultLimit)))
+	categories, err := quizApi.CategoryStore.GetAll(quizApi.Context, int(token.GetInt32(ParamNameLimit, DefaultLimit)))
 
 	return api.Response{Data: categories}, err
 }
