@@ -44,7 +44,7 @@ func (api *QuizzicalAPI) AuthHandleWith(handler APIHandler) func(http.ResponseWr
 			return
 		}
 
-		api.HandleWith(handler)
+		api.HandleWith(handler)(w,r)
 	}
 }
 

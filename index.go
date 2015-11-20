@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"os"
-	_ "time"
+	"time"
 )
 
 func init() {
@@ -57,7 +57,7 @@ func setupConsumer() *jwt.Consumer {
 	consumer.SetJTIRequired(true)
 	consumer.SetExpirationTimeRequired(!isDevelopmentMode())
 	consumer.SetIssuedAtRequired(!isDevelopmentMode())
-	consumer.SetTokenLifespanInMinutesSinceIssue(60)
+	consumer.SetTokenLifespan(time.Hour)
 
 	return consumer
 }
