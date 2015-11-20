@@ -17,8 +17,39 @@ type QuizzicalAPI struct {
 	Context       appengine.Context
 }
 
+type APIHandler func(*http.Request, *QuizzicalAPI) (interface{}, error)
+
+func (api *QuizzicalAPI) HandleWith(handler APIHandler) func(http.ResponseWriter, *http.Request){
+	return func(w http.ResponseWriter, r * http.Request){
+
+		api.Context = appengine.NewContext(r)
+
+		result, err := handler(r, api)
+		if err != nil {
+			api.Respond(w, r, NewError(err), http.StatusInternalServerError)
+			return
+		}
+
+		api.Respond(w, r, result, http.StatusOK)
+
+	}
+}
+
+func (api *QuizzicalAPI) AuthHandleWith(handler APIHandler) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		_, err := api.Authenticate(r)
+		if err != nil {
+			api.Respond(w, r, NewError(err), http.StatusUnauthorized)
+			return
+		}
+
+		api.HandleWith(handler)
+	}
+}
+
 func (api *QuizzicalAPI) Authenticate(r *http.Request) (*jwt.Token, error) {
-	return api.Consumer.ValidateTokenFromRequestParameter(r, "token", []byte(auth.Key))
+	return api.Consumer.ValidateTokenFromRequestHeader(r, []byte(auth.Key))
 }
 
 func (api *QuizzicalAPI) Respond(w http.ResponseWriter, r *http.Request, body interface{}, status int) {
@@ -47,26 +78,3 @@ func (api *QuizzicalAPI) Respond(w http.ResponseWriter, r *http.Request, body in
 	w.Write(content)
 }
 
-type APIHandler func(*http.Request, *jwt.Token, *QuizzicalAPI) (interface{}, error)
-
-func (api *QuizzicalAPI) HandleWith(handler APIHandler) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-		token, err := api.Authenticate(r)
-		if err != nil {
-			api.Respond(w, r, NewError(err), http.StatusUnauthorized)
-			return
-		}
-
-		api.Context = appengine.NewContext(r)
-		api.Context.Infof(token.String())
-
-		result, err := handler(r, token, api)
-		if err != nil {
-			api.Respond(w, r, NewError(err), http.StatusInternalServerError)
-			return
-		}
-
-		api.Respond(w, r, result, http.StatusOK)
-	}
-}

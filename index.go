@@ -18,20 +18,25 @@ func init() {
 
 	apiSubrouter := router.PathPrefix("/api/v2/").Subrouter()
 
-	apiSubrouter.HandleFunc("/categories", api.HandleWith(endpoint.Category.List)).
+	apiSubrouter.HandleFunc("/auth", api.HandleWith(endpoint.Auth.IssueToken)).
+		Methods("POST").
+		Schemes("https")
+
+	apiSubrouter.HandleFunc("/categories", api.AuthHandleWith(endpoint.Category.List)).
 		Methods("GET")
 
-	apiSubrouter.HandleFunc("/category", api.HandleWith(endpoint.Category.Post)).
+	apiSubrouter.HandleFunc("/category", api.AuthHandleWith(endpoint.Category.Post)).
 		Methods("POST")
 
-	apiSubrouter.HandleFunc("/questions", api.HandleWith(endpoint.Question.List)).
+	apiSubrouter.HandleFunc("/questions", api.AuthHandleWith(endpoint.Question.List)).
 		Methods("GET")
 
-	apiSubrouter.HandleFunc("/question", api.HandleWith(endpoint.Question.Post)).
+	apiSubrouter.HandleFunc("/question", api.AuthHandleWith(endpoint.Question.Post)).
 		Methods("POST")
 
-	apiSubrouter.HandleFunc("/question", api.HandleWith(endpoint.Question.Delete)).
+	apiSubrouter.HandleFunc("/question", api.AuthHandleWith(endpoint.Question.Delete)).
 		Methods("DELETE")
+
 
 	http.Handle("/", router)
 }
@@ -52,7 +57,7 @@ func setupConsumer() *jwt.Consumer {
 	consumer.SetJTIRequired(true)
 	consumer.SetExpirationTimeRequired(!isDevelopmentMode())
 	consumer.SetIssuedAtRequired(!isDevelopmentMode())
-	consumer.SetTokenLifespanInMinutesSinceIssue(2)
+	consumer.SetTokenLifespanInMinutesSinceIssue(60)
 
 	return consumer
 }
