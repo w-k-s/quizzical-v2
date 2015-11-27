@@ -73,8 +73,8 @@ func (api *QuizzicalAPI) Respond(w http.ResponseWriter, r *http.Request, body in
 		panic(err)
 	}
 
-	w.WriteHeader(status)
 	w.Header().Set("Content-Type", contentType)
+	w.WriteHeader(status)
 	w.Write(content)
 }
 

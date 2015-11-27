@@ -11,10 +11,17 @@ import (
 	"time"
 )
 
+const iTunesURL = "https://itunes.apple.com/us/app/quizzical-2/id1037469507"
+
 func init() {
 
 	router := mux.NewRouter()
 	api := setupQuizzicalAPI()
+
+	router.HandleFunc("/",func(w http.ResponseWriter, r *http.Request){
+		http.Redirect(w,r,iTunesURL,http.StatusSeeOther)
+	}).
+	Methods("GET")
 
 	apiSubrouter := router.PathPrefix("/api/v2/").Subrouter()
 

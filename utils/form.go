@@ -5,9 +5,9 @@ import(
 	"strconv"
 )
 
-func FormInt(r * http.Request, key string, defaultValue int) int{
+func FormUInt(r * http.Request, key string, defaultValue int) int{
 
-	if value,err := strconv.Atoi(r.FormValue(key)); err != nil{
+	if value,err := strconv.Atoi(r.FormValue(key)); err != nil || value < 0{
 		return defaultValue
 	}else{
 		return value

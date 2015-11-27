@@ -1,12 +1,12 @@
 package endpoint
 
-const DefaultLimit = 10
-const DefaultOffset = 0
+const DefaultPageSize = 10
+const DefaultPageNumber = 1
 
 const ParamNameCategory = "category"
 const ParamNameQuestion = "question"
-const ParamNameLimit = "limit"
-const ParamNameOffset = "offset"
+const ParamNamePageSize = "size"
+const ParamNamePageNumber = "page"
 const ParamNameKey = "key"
 const ParamClaimIssuer = "iss"
 const ParamSubject = "sub"

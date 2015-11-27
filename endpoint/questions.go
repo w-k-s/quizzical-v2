@@ -22,12 +22,12 @@ func (endpoint *QuestionEndpoint) List(r *http.Request, quizApi *api.QuizzicalAP
 		return nil, fmt.Errorf("Required Parameter '%s' not present in query.", ParamNameCategory)
 	}
 
-	limit := utils.FormInt(r,ParamNameLimit,DefaultLimit)
-	offset := utils.FormInt(r,ParamNameOffset,DefaultOffset)
+	pageSize := utils.FormUInt(r,ParamNamePageSize,DefaultPageSize)
+	pageNumber := utils.FormUInt(r,ParamNamePageNumber,DefaultPageNumber)
 
-	questions, err := quizApi.QuestionStore.GetAll(quizApi.Context, limit, offset, category)
+	result, err := quizApi.QuestionStore.GetAll(quizApi.Context, pageSize, pageNumber, category)
 
-	return api.Response{Data: questions}, err
+	return api.NewPaginatedResponse(result.Data,pageSize,pageNumber,result.TotalCount), err
 }
 
 func (endpoint *QuestionEndpoint) Post(r *http.Request, quizApi *api.QuizzicalAPI) (interface{}, error) {

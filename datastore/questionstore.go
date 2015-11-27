@@ -4,6 +4,7 @@ import (
 	"appengine"
 	"appengine/datastore"
 	"models"
+	"fmt"
 	"net/http"
 )
 
@@ -11,39 +12,41 @@ const (
 	EntityQuestion       = "question"
 	QueryNoOffset        = -1
 	QueryNoCategory      = ""
-	DefaultQuestionLimit = 20
+	DefaultQuestionPageSize = 20
 )
 
 type QuestionStore struct{}
 
-func (store *QuestionStore) GetAll(context appengine.Context, limit, offset int, category string) ([]*models.Question, error) {
+func (store *QuestionStore) GetAll(context appengine.Context, pageSize, pageNumber int, category string) (Result, error) {
 
-	if limit <= 0 {
-		limit = DefaultQuestionLimit
+	if len(category) == 0{
+		return Result{}, fmt.Errorf("Category is required in order to query questions.")
 	}
 
-	query := datastore.NewQuery(EntityQuestion)
-
-	if len(category) > 0 {
-		query = query.Filter("Category =", category)
+	if pageSize <= 0 {
+		pageSize = DefaultQuestionPageSize
 	}
 
-	if offset > 0 {
+	count,_ := store.Count(context,category);
+
+	query := datastore.NewQuery(EntityQuestion).
+		Filter("Category =", category)
+	
+
+	if pageNumber > 0 {
+		offset := pageSize * (pageNumber-1)
+
 		query = query.Offset(offset)
 	}
 
-	query = query.Limit(limit)
+	query = query.Limit(pageSize)
 
 	var questions []*models.Question
 
 	keys, err := query.GetAll(context, &questions)
 
 	if err != nil {
-		return nil, err
-	}
-
-	if questions == nil {
-		questions = make([]*models.Question, 0)
+		return Result{}, err
 	}
 
 	for i, question := range questions {
@@ -51,13 +54,11 @@ func (store *QuestionStore) GetAll(context appengine.Context, limit, offset int,
 		question.Key = encodedKey
 	}
 
-	return questions, nil
-
+	return Result{TotalCount: count, Data: questions}, nil
 }
 
-func (s *QuestionStore) Count(request *http.Request, category string) (int, error) {
+func (s *QuestionStore) Count(context appengine.Context, category string) (int, error) {
 
-	context := appengine.NewContext(request)
 	query := datastore.NewQuery(EntityQuestion)
 
 	if len(category) > 0 {

@@ -3,10 +3,34 @@ package api
 import (
 	"encoding/xml"
 	"time"
+	"math"
 )
 
 type Response struct {
 	Data interface{} `json:"Data"`
+}
+
+type PaginatedResponse struct{
+	Data interface{}
+	CurrentPage int
+	TotalPages int
+	PageSize int
+}
+
+func NewPaginatedResponse(data interface{},pageSize, pageNumber, totalItems int) *PaginatedResponse{
+
+	totalPages := 0
+	if pageSize > 0 {
+		totalPages = int(math.Ceil(float64(totalItems)/float64(pageSize)))
+	}
+
+	return &PaginatedResponse{
+		Data: data,
+		CurrentPage: pageNumber,
+		PageSize: pageSize,
+		TotalPages: totalPages,
+	}
+
 }
 
 type Error struct {
