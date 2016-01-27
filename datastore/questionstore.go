@@ -5,14 +5,10 @@ import (
 	"appengine/datastore"
 	"models"
 	"fmt"
-	"net/http"
 )
 
 const (
 	EntityQuestion       = "question"
-	QueryNoOffset        = -1
-	QueryNoCategory      = ""
-	DefaultQuestionPageSize = 20
 )
 
 type QuestionStore struct{}
@@ -24,7 +20,7 @@ func (store *QuestionStore) GetAll(context appengine.Context, pageSize, pageNumb
 	}
 
 	if pageSize <= 0 {
-		pageSize = DefaultQuestionPageSize
+		return Result{}, fmt.Errorf("Page Size must be > 0")
 	}
 
 	count,_ := store.Count(context,category);
@@ -34,8 +30,8 @@ func (store *QuestionStore) GetAll(context appengine.Context, pageSize, pageNumb
 	
 
 	if pageNumber > 0 {
-		offset := pageSize * (pageNumber-1)
 
+		offset := pageSize * (pageNumber-1)
 		query = query.Offset(offset)
 	}
 
@@ -45,16 +41,14 @@ func (store *QuestionStore) GetAll(context appengine.Context, pageSize, pageNumb
 
 	keys, err := query.GetAll(context, &questions)
 
-	if err != nil {
-		return Result{}, err
+	if err == nil {
+		for i, question := range questions {
+			encodedKey := keys[i].Encode()
+			question.Key = encodedKey
+		}
 	}
 
-	for i, question := range questions {
-		encodedKey := keys[i].Encode()
-		question.Key = encodedKey
-	}
-
-	return Result{TotalCount: count, Data: questions}, nil
+	return Result{TotalCount: count, Data: questions}, err
 }
 
 func (s *QuestionStore) Count(context appengine.Context, category string) (int, error) {
@@ -65,33 +59,7 @@ func (s *QuestionStore) Count(context appengine.Context, category string) (int, 
 		query = query.Filter("Category =", category)
 	}
 
-	count, err := query.Count(context)
-
-	if err != nil {
-		return -1, err
-	}
-
-	return count, nil
-}
-
-func (s *QuestionStore) Find(request *http.Request, key string) (*models.Question, error) {
-
-	context := appengine.NewContext(request)
-
-	decodedKey, err := datastore.DecodeKey(key)
-	if err != nil {
-		return nil, err
-	}
-
-	question := new(models.Question)
-
-	err = datastore.Get(context, decodedKey, question)
-	if err != nil {
-		return nil, err
-	}
-
-	question.Key = key
-	return question, nil
+	return query.Count(context)
 }
 
 func (s *QuestionStore) Save(context appengine.Context, question *models.Question) error {
@@ -99,13 +67,11 @@ func (s *QuestionStore) Save(context appengine.Context, question *models.Questio
 	completeKey := datastore.NewKey(context, EntityQuestion, question.Hash(), 0, nil)
 	key, err := datastore.Put(context, completeKey, question)
 
-	if err != nil {
-		return err
+	if err == nil {
+		question.Key = key.Encode()
 	}
 
-	question.Key = key.Encode()
-
-	return nil
+	return err
 }
 
 func (s *QuestionStore) Delete(context appengine.Context, key string) error {

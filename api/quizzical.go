@@ -1,13 +1,15 @@
 package api
 
 import (
-	"appengine"
 	"auth"
-	"bitbucket.org/waqqas-abdulkareem/jwt-go"
 	"datastore"
 	"encoding/json"
 	"encoding/xml"
 	"net/http"
+
+	"bitbucket.org/waqqas-abdulkareem/jwt-go"
+
+	"appengine"
 )
 
 type QuizzicalAPI struct {
@@ -19,8 +21,8 @@ type QuizzicalAPI struct {
 
 type APIHandler func(*http.Request, *QuizzicalAPI) (interface{}, error)
 
-func (api *QuizzicalAPI) HandleWith(handler APIHandler) func(http.ResponseWriter, *http.Request){
-	return func(w http.ResponseWriter, r * http.Request){
+func (api *QuizzicalAPI) HandleWith(handler APIHandler) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 
 		api.Context = appengine.NewContext(r)
 
@@ -44,7 +46,7 @@ func (api *QuizzicalAPI) AuthHandleWith(handler APIHandler) func(http.ResponseWr
 			return
 		}
 
-		api.HandleWith(handler)(w,r)
+		api.HandleWith(handler)(w, r)
 	}
 }
 
@@ -77,4 +79,3 @@ func (api *QuizzicalAPI) Respond(w http.ResponseWriter, r *http.Request, body in
 	w.WriteHeader(status)
 	w.Write(content)
 }
-

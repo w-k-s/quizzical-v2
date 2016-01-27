@@ -12,5 +12,4 @@ func FormUInt(r * http.Request, key string, defaultValue int) int{
 	}else{
 		return value
 	}
-
 }
