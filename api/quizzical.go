@@ -40,7 +40,11 @@ func (api *QuizzicalAPI) HandleWith(handler APIHandler) func(http.ResponseWriter
 func (api *QuizzicalAPI) AuthHandleWith(handler APIHandler) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		_, err := api.Authenticate(r)
+		var err error
+		if !appengine.IsDevAppServer(){
+			_, err = api.Authenticate(r)
+		}
+
 		if err != nil {
 			api.Respond(w, r, NewError(err), http.StatusUnauthorized)
 			return

@@ -74,6 +74,26 @@ func (s *QuestionStore) Save(context appengine.Context, question *models.Questio
 	return err
 }
 
+func (s *QuestionStore) SaveMulti(context appengine.Context, questions []models.Question) error {
+
+	completeKeys := make([]*datastore.Key,len(questions))
+	
+	for i,question := range questions{
+		completeKeys[i] = datastore.NewKey(context, EntityQuestion, question.Hash(), 0, nil)
+	}
+
+	keys, err := datastore.PutMulti(context, completeKeys, questions)
+
+	if err == nil {
+		for i := 0; i < len(questions) ; i++{
+			questions[i].Key = keys[i].Encode()
+		}
+	}
+
+	return err
+}
+
+
 func (s *QuestionStore) Delete(context appengine.Context, key string) error {
 
 	decodedKey, err := datastore.DecodeKey(key)

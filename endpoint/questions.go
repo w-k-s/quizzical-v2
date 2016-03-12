@@ -54,6 +54,32 @@ func (endpoint *QuestionEndpoint) Post(r *http.Request, quizApi *api.QuizzicalAP
 	return api.Response{Data: question}, err
 }
 
+func (endpoint *QuestionEndpoint) PostMulti(r *http.Request, quizApi *api.QuizzicalAPI) (interface{}, error) {
+
+	body, err := ioutil.ReadAll(r.Body)
+    if err != nil {
+        return nil, err;
+    }
+
+    var questions []models.Question
+    
+	err = json.Unmarshal(body, &questions)
+    if err != nil {
+        return nil, err;
+    }
+
+    for _,question := range questions{
+    	err  = question.Validate()
+    	if  err != nil{
+    		return nil,err
+    	}
+    }
+
+	err = quizApi.QuestionStore.SaveMulti(quizApi.Context, questions)
+
+	return api.Response{Data: questions}, err
+}
+
 func (endpoint *QuestionEndpoint) Delete(r *http.Request, quizApi *api.QuizzicalAPI) (interface{}, error) {
 
 	key := r.FormValue(ParamNameKey)

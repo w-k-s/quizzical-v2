@@ -41,6 +41,9 @@ func init() {
 	apiSubrouter.HandleFunc("/question", api.AuthHandleWith(endpoint.Question.Post)).
 		Methods("POST")
 
+	apiSubrouter.HandleFunc("/questions", api.AuthHandleWith(endpoint.Question.PostMulti)).
+		Methods("POST")
+
 	apiSubrouter.HandleFunc("/question", api.AuthHandleWith(endpoint.Question.Delete)).
 		Methods("DELETE")
 
